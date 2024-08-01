@@ -57,8 +57,6 @@ Luca3Auth is a blockchain-based system integrating NFT wallets with RFID and bar
 - **Operational Efficiency**: Reduces administrative overhead with automated processes.
 - **Improved Accessibility**: Ensures inclusive access to services for all students.
 
-For more details on ZK Face ID technology, visit [ZK Face ID Wallet](https://hackmd.io/@knownothing/zk-face-id).
-
 ## Acknowledgements
 
 Special thanks to Asia Pacific University of Technology and Innovation, Prof. Vinesh, Mr. Dhason, and the APU Blockchain & Cryptocurrency Club for their support and guidance.
