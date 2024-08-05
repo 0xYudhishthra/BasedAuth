@@ -27,19 +27,24 @@ Luca3Auth is a blockchain-based system integrating NFT wallets with RFID and bar
 ### Steps
 
 1. **System Architecture Design**:
+
    - Integrate existing RFID infrastructure with the blockchain network.
    - Map out how RFID data interacts with blockchain transactions to ensure data integrity and security.
 
 2. **Smart Contract Development**:
+
    - Develop smart contracts on the Layer 2 blockchain to handle features of campus services and permission management for NFTs.
 
 3. **Middleware Development**:
+
    - Create middleware to translate RFID scan outputs into blockchain-readable signals to query or initiate smart contracts.
 
 4. **User Interface Development**:
+
    - Design interfaces for both administrators and students to manage access rights and view transaction histories.
 
 5. **Testing and Optimization**:
+
    - Conduct thorough testing to ensure system reliability and optimize for performance.
 
 6. **Documentation and Demo**:
@@ -60,6 +65,24 @@ Luca3Auth is a blockchain-based system integrating NFT wallets with RFID and bar
 ## Acknowledgements
 
 Special thanks to Asia Pacific University of Technology and Innovation, Prof. Vinesh, Mr. Dhason, and the APU Blockchain & Cryptocurrency Club for their support and guidance.
+
+## Deliverables
+
+- [ ] RFID Integration
+  - [ ] Manual User Input
+  - [ ] RFID Reader
+  - [ ] Barcode Scanner
+- [ ] Biometric Authentication
+  - [ ] TouchID Recognition
+  - [ ] FaceID Recognition
+- [ ] Zero-Knowledge Proofs
+- [ ] Smart Contracts
+  - [ ] Handle Account Contract for APCard
+  - [ ] Handle Verification Contract for APCard
+- [ ] Middleware
+- [ ] User Interface
+- [ ] Testing and Optimization
+- [ ] Documentation and Demo
 
 ---
 
