@@ -8,13 +8,13 @@ import "./interfaces/IERC6551Registry.sol";
 /// @notice This contract implements the ERC6551 Registry standard for creating and managing token bound accounts
 /// @dev This contract uses assembly for gas optimization and implements the IERC6551Registry interface
 contract ERC6551Registry is IERC6551Registry {
-    /// @notice The event emitted when a new SNARK verifier is set
+    /// @notice Emitted when a new SNARK verifier is set
     event SnarkVerifierSet(address indexed snarkVerifier);
 
-    /// @notice The event emitted when a new implementation address is set
+    /// @notice Emitted when a new implementation address is set
     event ImplementationSet(address indexed implementation);
 
-    /// @notice The event emitted when a new admin address is set
+    /// @notice Emitted when a new admin address is set
     event AdminSet(address indexed admin);
 
     /// @notice The address of the implementation contract
@@ -26,15 +26,19 @@ contract ERC6551Registry is IERC6551Registry {
     /// @notice The address of the admin
     address public admin_;
 
-    /// @notice The cardUID
+    /// @notice The cardUID (purpose not specified in the contract)
     string public cardUID_;
 
-    /// @notice Modifier to check if the caller is the admin
+    /// @notice Ensures only the admin can call the function
     modifier onlyAdmin() {
         require(msg.sender == admin_, "Only admin can call this function");
         _;
     }
 
+    /// @notice Initializes the contract with necessary addresses
+    /// @param _snarkVerifier The address of the SNARK verifier contract
+    /// @param _implementation The address of the implementation contract
+    /// @param _admin The address of the admin
     constructor(
         address _snarkVerifier,
         address _implementation,
@@ -51,6 +55,7 @@ contract ERC6551Registry is IERC6551Registry {
     /// @param chainId The chain ID where the NFT contract is deployed
     /// @param tokenContract The address of the NFT contract
     /// @param tokenId The ID of the NFT
+    /// @param cardUID The card UID (purpose not specified)
     /// @return The address of the newly created account
     function createAccount(
         bytes32 salt,
@@ -61,12 +66,10 @@ contract ERC6551Registry is IERC6551Registry {
     ) external returns (address) {
         assembly {
             // Memory Layout:
-            // ----
             // 0x00   0xff                           (1 byte)
             // 0x01   registry (address)             (20 bytes)
             // 0x15   salt (bytes32)                 (32 bytes)
             // 0x35   Bytecode Hash (bytes32)        (32 bytes)
-            // ----
             // 0x55   ERC-1167 Constructor + Header  (20 bytes)
             // 0x69   implementation (address)       (20 bytes)
             // 0x5D   ERC-1167 Footer                (15 bytes)
@@ -74,8 +77,8 @@ contract ERC6551Registry is IERC6551Registry {
             // 0xAC   chainId (uint256)              (32 bytes)
             // 0xCC   tokenContract (address)        (32 bytes)
             // 0xEC   tokenId (uint256)              (32 bytes)
-            // 0xFC   snarkVerifier (address)       (32 bytes)
-            // 0xBC   cardUID (string)               (32 bytes)
+            // 0xFC   snarkVerifier (address)        (32 bytes)
+            // 0x10C  cardUID (string)               (32 bytes)
 
             // Silence unused variable warnings
             pop(chainId)
@@ -138,7 +141,6 @@ contract ERC6551Registry is IERC6551Registry {
 
             // Otherwise, return the computed account address
             mstore(0x00, shr(96, shl(96, computed)))
-
             return(0x00, 0x20)
         }
     }

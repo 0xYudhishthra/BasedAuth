@@ -5,19 +5,17 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Luca3Drops.sol";
 import "./Luca3Treasury.sol";
 
 interface IERC6551Account {
     receive() external payable;
-
     function token()
         external
         view
         returns (uint256 chainId, address tokenContract, uint256 tokenId);
-
     function state() external view returns (uint256);
-
     function isValidSigner(
         address signer,
         bytes calldata context
@@ -32,6 +30,7 @@ interface IERC6551Executable {
         uint8 operation
     ) external payable returns (bytes memory);
 }
+
 /// @title ERC6551 Account Implementation
 /// @author Luca3
 /// @notice This contract implements the ERC6551 Account standard
@@ -90,6 +89,8 @@ contract ERC6551Account is
     /// @notice Initializes the account with the SNARK verifier address
     /// @dev This function should be called right after deployment
     /// @param _snarkVerifier The address of the SNARK verifier contract
+    /// @param _cardUID The Card UID for this account
+    /// @param _luca3Treasury The address of the Luca3Treasury contract
     function initialize(
         address _snarkVerifier,
         string memory _cardUID,
@@ -143,10 +144,12 @@ contract ERC6551Account is
         if (_isValidSigner(signer)) {
             return IERC6551Account.isValidSigner.selector;
         }
-
         return bytes4(0);
     }
 
+    /// @notice Retrieves a connection by index
+    /// @param index The index of the connection to retrieve
+    /// @return The Connection struct at the given index
     function getConnection(
         uint256 index
     ) public view returns (Connection memory) {
@@ -179,7 +182,6 @@ contract ERC6551Account is
         if (isValid) {
             return IERC1271.isValidSignature.selector;
         }
-
         return bytes4(0);
     }
 
@@ -241,10 +243,8 @@ contract ERC6551Account is
         (bool success, ) = snarkVerifier_.call(signature);
         require(success, "Invalid SNARK proof");
 
-        // Check if the certification has already been claimed
-        Luca3Drops luca3Drops = Luca3Drops(luca3DropsAddress_);
-
         // Mark the certification as claimed
+        Luca3Drops luca3Drops = Luca3Drops(luca3DropsAddress_);
         luca3Drops.markCertificationClaimed(
             certificationId,
             cardUID_,
@@ -255,12 +255,45 @@ contract ERC6551Account is
         ++state;
     }
 
-    // A function that can swap the ETH in the account to USD by interacting with the Luca3Treasury contract
-    function swapEthForUsdc(address _luca3TreasuryAddress) external {
+    /// @notice Swaps ETH in the account for USDC using the Luca3Treasury contract
+    /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
+    /// @param signature The SNARK proof
+    function swapEthForUsdc(
+        address _luca3TreasuryAddress,
+        bytes memory signature
+    ) external {
         require(_isValidSigner(msg.sender), "Invalid signer");
+        (bool success, ) = snarkVerifier_.call(signature);
+        require(success, "Invalid SNARK proof");
+
         Luca3Treasury luca3Treasury = Luca3Treasury(
             payable(_luca3TreasuryAddress)
         );
         luca3Treasury.swapEthForUsdc(cardUID_);
+
+        // Increment the state
+        ++state;
+    }
+
+    /// @notice Transfers USDC from this account to another address
+    /// @param _usdcAddress The address of the USDC token contract
+    /// @param _recipient The address to receive the USDC
+    /// @param _amount The amount of USDC to transfer
+    /// @param signature The SNARK proof
+    function transferUsdcToAddress(
+        address _usdcAddress,
+        address _recipient,
+        uint256 _amount,
+        bytes memory signature
+    ) external {
+        require(_isValidSigner(msg.sender), "Invalid signer");
+        (bool success, ) = snarkVerifier_.call(signature);
+        require(success, "Invalid SNARK proof");
+
+        // Transfer USDC from this account to the recipient
+        IERC20(_usdcAddress).transfer(_recipient, _amount);
+
+        // Increment the state
+        ++state;
     }
 }
