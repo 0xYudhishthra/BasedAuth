@@ -53,6 +53,14 @@ contract ERC6551Account is
         string _cardUID
     );
 
+    //Custom errors
+    error InvalidSigner();
+    error OnlyCallOperations();
+    error InvalidSNARKProof();
+    error Luca3AuthAddressNotSet();
+    error AmountMustBeGreaterThanZero();
+    error InsufficientETHBalance();
+
     /// @notice The current state of the account
     /// @dev This value is incremented each time the account's state changes
     uint256 public state;
@@ -87,8 +95,8 @@ contract ERC6551Account is
         bytes calldata data,
         uint8 operation
     ) external payable virtual returns (bytes memory result) {
-        require(_isValidSigner(msg.sender), "Invalid signer");
-        require(operation == 0, "Only call operations are supported");
+        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
+        if (operation != 0) revert OnlyCallOperations();
 
         ++state;
 
@@ -126,11 +134,9 @@ contract ERC6551Account is
         bool isValid;
 
         if (snarkVerifier_ != address(0)) {
-            // P256 signature verification
             (bool success, ) = snarkVerifier_.staticcall(signature);
             isValid = success;
         } else {
-            // Fallback to existing ECDSA verification
             isValid = SignatureChecker.isValidSignatureNow(
                 owner(),
                 hash,
@@ -195,12 +201,12 @@ contract ERC6551Account is
         uint256 certificationId,
         bytes memory signature
     ) external {
-        require(_isValidSigner(msg.sender), "Invalid signer");
-        require(luca3AuthAddress_ != address(0), "Luca3Auth address not set");
+        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
+        if (luca3AuthAddress_ == address(0)) revert Luca3AuthAddressNotSet();
 
         // Verify the SNARK proof
         (bool success, ) = snarkVerifier_.call(signature);
-        require(success, "Invalid SNARK proof");
+        if (!success) revert InvalidSNARKProof();
 
         // Mark the certification as claimed
         Luca3Auth luca3Auth = Luca3Auth(luca3AuthAddress_);
@@ -218,12 +224,12 @@ contract ERC6551Account is
     /// @param amount The amount of ETH to swap
     /// @param signature The SNARK proof
     function swapEthForUsdc(uint256 amount, bytes memory signature) external {
-        require(amount > 0, "Amount must be greater than 0");
-        require(address(this).balance >= amount, "Insufficient ETH balance");
-        require(_isValidSigner(msg.sender), "Invalid signer");
+        if (amount == 0) revert AmountMustBeGreaterThanZero();
+        if (address(this).balance < amount) revert InsufficientETHBalance();
+        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
 
         (bool success, ) = snarkVerifier_.call(signature);
-        require(success, "Invalid SNARK proof");
+        if (!success) revert InvalidSNARKProof();
 
         Luca3Treasury luca3Treasury = Luca3Treasury(
             payable(luca3TreasuryAddress_)
@@ -245,9 +251,9 @@ contract ERC6551Account is
         uint256 _amount,
         bytes memory signature
     ) external {
-        require(_isValidSigner(msg.sender), "Invalid signer");
+        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
         (bool success, ) = snarkVerifier_.call(signature);
-        require(success, "Invalid SNARK proof");
+        if (!success) revert InvalidSNARKProof();
 
         // Transfer USDC from this account to the recipient
         IERC20(_usdcAddress).transfer(_recipient, _amount);
