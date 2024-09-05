@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "../src/Luca3Drops.sol";
+import "../src/Luca3Auth.sol";
 import "../src/ERC6551Registry.sol";
 import "../src/ERC6551Account.sol";
 import "../src/Luca3Treasury.sol";
@@ -72,10 +72,14 @@ contract Deploy is Script {
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIV_KEY");
+        uint256 testerPrivateKey = vm.envUint("TESTER_PRIV_KEY");
         address deployer = vm.addr(deployerPrivateKey);
+        address tester = vm.addr(testerPrivateKey);
 
         console.log("Deployer: ", deployer);
         console.log("Deployer Nonce: ", vm.getNonce(deployer));
+        console.log("Tester: ", tester);
+        console.log("Tester Nonce: ", vm.getNonce(tester));
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -88,30 +92,35 @@ contract Deploy is Script {
         console.log("Deployed Snark Verifier @", snarkVerifier);
 
         // Deploy ERC6551Registry
-        ERC6551Registry registry = new ERC6551Registry(
-            snarkVerifier,
-            address(implementation),
-            deployer
-        );
+        ERC6551Registry registry = new ERC6551Registry();
         console.log("Deployed ERC6551Registry @", address(registry));
 
-        // Set up Luca3Drops parameters
-        string memory name = "Luca3Drops";
+        // Set up Luca3Auth parameters
+        string memory name = "Luca3Auth";
 
-        string memory symbol = "L3D";
+        string memory symbol = "L3A";
         address airnodeRrp = 0xa0AD79D995DdeeB18a14eAef56A549A04e3Aa1Bd;
+        address usdcToken = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
 
-        // Deploy Luca3Drops
-        Luca3Drops luca3Drops = new Luca3Drops(
+        // Deploy Luca3Treasury
+        Luca3Treasury luca3Treasury = new Luca3Treasury(address(usdcToken));
+        console.log("Deployed Luca3Treasury @", address(luca3Treasury));
+
+        // Deploy Luca3Auth
+        Luca3Auth luca3Auth = new Luca3Auth(
             name,
             symbol,
             address(registry),
             address(implementation),
+            address(luca3Treasury),
             snarkVerifier,
             deployer,
             airnodeRrp
         );
-        console.log("Deployed Luca3Drops @", address(luca3Drops));
+        console.log("Deployed Luca3Auth @", address(luca3Auth));
+
+        // Set the sponsor wallet
+        luca3Treasury.updateLuca3Auth(address(luca3Auth));
 
         string[] memory inputs = new string[](9);
         inputs[0] = "npx";
@@ -124,7 +133,7 @@ contract Deploy is Script {
         inputs[5] = "--airnode-address";
         inputs[6] = "0x6238772544f029ecaBfDED4300f13A3c4FE84E1D";
         inputs[7] = "--sponsor-address";
-        inputs[8] = address(luca3Drops).toHexString();
+        inputs[8] = address(luca3Auth).toHexString();
 
         bytes memory result = vm.ffi(inputs);
 
@@ -151,15 +160,22 @@ contract Deploy is Script {
         console.log("Recipient address:", recipient);
 
         //transfer 1 ETH to the derived address from the deployer
-        (bool success, ) = recipient.call{value: 0.05 ether}("");
+        (bool success, ) = recipient.call{value: 0.001 ether}("");
         require(success, "Transfer failed");
 
-        console.log("Sent 0.05 ETH to", recipient);
+        console.log("Sent 0.001 ETH to", recipient);
 
         console.log("Balance of", recipient, "is", recipient.balance);
 
         //Set the sponsor wallet
-        luca3Drops.setSponsorWallet(recipient);
+        luca3Auth.setSponsorWallet(recipient);
+
+        vm.stopBroadcast();
+
+        vm.startBroadcast(testerPrivateKey);
+
+        //Create a transaction to create student request
+        luca3Auth.registerStudentRequest("TEST", 0xF132, "TESTTEST");
 
         vm.stopBroadcast();
     }
