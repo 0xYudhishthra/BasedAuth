@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 interface IERC6551Registry {
@@ -29,11 +29,11 @@ interface IERC6551Registry {
      * @return account The address of the token bound account
      */
     function createAccount(
+        address implementation,
         bytes32 salt,
         uint256 chainId,
         address tokenContract,
-        uint256 tokenId,
-        string memory cardUID
+        uint256 tokenId
     ) external returns (address account);
 
     /**
@@ -42,6 +42,7 @@ interface IERC6551Registry {
      * @return account The address of the token bound account
      */
     function account(
+        address implementation,
         bytes32 salt,
         uint256 chainId,
         address tokenContract,

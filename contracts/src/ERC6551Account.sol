@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Luca3Drops.sol";
+import "./Luca3Auth.sol";
 import "./Luca3Treasury.sol";
 
 interface IERC6551Account {
@@ -32,7 +32,7 @@ interface IERC6551Executable {
 }
 
 /// @title ERC6551 Account Implementation
-/// @author Luca3
+/// @author Yudhishthra Sugumaran @ Luca3
 /// @notice This contract implements the ERC6551 Account standard
 /// @dev This contract allows NFTs to own assets and execute transactions
 contract ERC6551Account is
@@ -41,18 +41,16 @@ contract ERC6551Account is
     IERC6551Account,
     IERC6551Executable
 {
-    /// @notice Error thrown when attempting to create a duplicate connection
-    /// @param _walletAddress The address that already exists as a connection
-    error ConnectionAlreadyExists(address _walletAddress);
-
-    /// @notice Event emitted when a new connection is created
-    /// @param name The name of the new connection
-    /// @param walletAddress The wallet address of the new connection
-    /// @param profilePicture The profile picture URL of the new connection
-    event ConnectionCreated(
-        string name,
-        address walletAddress,
-        string profilePicture
+    /// @notice Event emitted when the account parameters are set
+    /// @param _luca3AuthAddress The address of the Luca3Auth contract
+    /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
+    /// @param _snarkVerifierAddress The address of the SNARK verifier contract
+    /// @param _cardUID The Card UID of the account
+    event AccountParametersSet(
+        address _luca3AuthAddress,
+        address _luca3TreasuryAddress,
+        address _snarkVerifierAddress,
+        string _cardUID
     );
 
     /// @notice The current state of the account
@@ -63,44 +61,14 @@ contract ERC6551Account is
     /// @dev This is the contract that will verify the SNARK proofs
     address public snarkVerifier_;
 
-    /// @notice The address of the Luca3Drops contract
-    address public luca3DropsAddress_;
+    /// @notice The address of the Luca3Auth contract
+    address public luca3AuthAddress_;
 
     /// @notice The Card UID of the account
     string public cardUID_;
 
     /// @notice The address of the Luca3Treasury contract
     address public luca3TreasuryAddress_;
-
-    /// @notice Struct to store connection details
-    /// @param name The name of the connection
-    /// @param walletAddress The wallet address of the connection
-    /// @param profilePicture The profile picture URL of the connection
-    struct Connection {
-        string name;
-        address walletAddress;
-        string profilePicture;
-    }
-
-    /// @notice Array to store all connections
-    /// @dev This array is used to store all connections
-    Connection[] public connections;
-
-    /// @notice Initializes the account with the SNARK verifier address
-    /// @dev This function should be called right after deployment
-    /// @param _snarkVerifier The address of the SNARK verifier contract
-    /// @param _cardUID The Card UID for this account
-    /// @param _luca3Treasury The address of the Luca3Treasury contract
-    function initialize(
-        address _snarkVerifier,
-        string memory _cardUID,
-        address _luca3Treasury
-    ) external {
-        require(snarkVerifier_ == address(0), "Already initialized");
-        snarkVerifier_ = _snarkVerifier;
-        cardUID_ = _cardUID;
-        luca3TreasuryAddress_ = _luca3Treasury;
-    }
 
     /// @notice Allows the account to receive Ether
     /// @dev This function is called when the account receives Ether
@@ -145,15 +113,6 @@ contract ERC6551Account is
             return IERC6551Account.isValidSigner.selector;
         }
         return bytes4(0);
-    }
-
-    /// @notice Retrieves a connection by index
-    /// @param index The index of the connection to retrieve
-    /// @return The Connection struct at the given index
-    function getConnection(
-        uint256 index
-    ) public view returns (Connection memory) {
-        return connections[index];
     }
 
     /// @notice Validates a signature for ERC1271 compatibility
@@ -237,15 +196,15 @@ contract ERC6551Account is
         bytes memory signature
     ) external {
         require(_isValidSigner(msg.sender), "Invalid signer");
-        require(luca3DropsAddress_ != address(0), "Luca3Drops address not set");
+        require(luca3AuthAddress_ != address(0), "Luca3Auth address not set");
 
         // Verify the SNARK proof
         (bool success, ) = snarkVerifier_.call(signature);
         require(success, "Invalid SNARK proof");
 
         // Mark the certification as claimed
-        Luca3Drops luca3Drops = Luca3Drops(luca3DropsAddress_);
-        luca3Drops.markCertificationClaimed(
+        Luca3Auth luca3Auth = Luca3Auth(luca3AuthAddress_);
+        luca3Auth.markCertificationClaimed(
             certificationId,
             cardUID_,
             address(this)
@@ -256,20 +215,20 @@ contract ERC6551Account is
     }
 
     /// @notice Swaps ETH in the account for USDC using the Luca3Treasury contract
-    /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
+    /// @param amount The amount of ETH to swap
     /// @param signature The SNARK proof
-    function swapEthForUsdc(
-        address _luca3TreasuryAddress,
-        bytes memory signature
-    ) external {
+    function swapEthForUsdc(uint256 amount, bytes memory signature) external {
+        require(amount > 0, "Amount must be greater than 0");
+        require(address(this).balance >= amount, "Insufficient ETH balance");
         require(_isValidSigner(msg.sender), "Invalid signer");
+
         (bool success, ) = snarkVerifier_.call(signature);
         require(success, "Invalid SNARK proof");
 
         Luca3Treasury luca3Treasury = Luca3Treasury(
-            payable(_luca3TreasuryAddress)
+            payable(luca3TreasuryAddress_)
         );
-        luca3Treasury.swapEthForUsdc(cardUID_);
+        luca3Treasury.swapEthForUsdc{value: amount}(cardUID_);
 
         // Increment the state
         ++state;
@@ -295,5 +254,25 @@ contract ERC6551Account is
 
         // Increment the state
         ++state;
+    }
+
+    /// @notice Sets the SNARK verifier address
+    /// @param _snarkVerifierAddress The address of the SNARK verifier contract
+    function setAccountParameters(
+        address _luca3AuthAddress,
+        address _luca3TreasuryAddress,
+        address _snarkVerifierAddress,
+        string memory _cardUID
+    ) external {
+        luca3AuthAddress_ = _luca3AuthAddress;
+        luca3TreasuryAddress_ = _luca3TreasuryAddress;
+        snarkVerifier_ = _snarkVerifierAddress;
+        cardUID_ = _cardUID;
+        emit AccountParametersSet(
+            _luca3AuthAddress,
+            _luca3TreasuryAddress,
+            _snarkVerifierAddress,
+            _cardUID
+        );
     }
 }
