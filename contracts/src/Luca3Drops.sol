@@ -19,6 +19,7 @@ contract Luca3Drops is ERC721, RrpRequesterV0 {
         string metadata;
         address tbaAddress;
         bool isRegistered;
+        address passkeyAddress;
     }
 
     /// @notice Struct to store certification information
@@ -39,13 +40,13 @@ contract Luca3Drops is ERC721, RrpRequesterV0 {
     address public admin_;
 
     /// @notice Mapping of card UIDs to student information
-    mapping(string => Student) private students_;
+    mapping(string => Student) public students_;
     /// @notice Mapping of certification IDs to certification information
-    mapping(uint256 => Certification) private certifications_;
+    mapping(uint256 => Certification) public certifications_;
     /// @notice Mapping to track unique metadata hashes
-    mapping(bytes32 => bool) private metadataHashes_;
+    mapping(bytes32 => bool) public metadataHashes_;
     /// @notice Mapping of request IDs to card UIDs
-    mapping(bytes32 => string) private requestIdToCardUID;
+    mapping(bytes32 => string) public requestIdToCardUID;
     /// @notice Mapping to track expected request fulfillments
     mapping(bytes32 => bool) public expectingRequestWithIdToBeFulfilled;
     /// @notice Counter for certification IDs
@@ -143,7 +144,7 @@ contract Luca3Drops is ERC721, RrpRequesterV0 {
         string memory cardUID,
         uint256 studentId,
         string memory metadata
-    ) public onlyAdmin returns (bytes32) {
+    ) public returns (bytes32) {
         if (students_[cardUID].isRegistered) {
             revert StudentAlreadyRegistered(students_[cardUID].studentId);
         }
@@ -156,6 +157,7 @@ contract Luca3Drops is ERC721, RrpRequesterV0 {
         students_[cardUID] = Student({
             studentId: studentId,
             metadata: metadata,
+            passkeyAddress: msg.sender,
             tbaAddress: address(0),
             isRegistered: false
         });
@@ -194,29 +196,29 @@ contract Luca3Drops is ERC721, RrpRequesterV0 {
         string memory cardUID = requestIdToCardUID[requestId];
         emit StudentRegistrationFulfilled(requestId, cardUID);
 
-        uint256 salt = uint256(
+        uint256 tokenId = uint256(
             keccak256(abi.encodePacked(cardUID, qrngUint256))
         );
 
-        _safeMint(msg.sender, salt);
+        _safeMint(students_[cardUID].passkeyAddress, tokenId);
 
         IERC6551Registry registry = IERC6551Registry(erc6551RegistryAddress_);
         address tbaAddress = registry.createAccount(
             bytes32(qrngUint256),
             block.chainid,
             address(this),
-            salt,
+            tokenId,
             cardUID
         );
 
-        students_[cardUID].tbaAddress = tbaAddress;
+        // students_[cardUID].tbaAddress = tbaAddress;
         students_[cardUID].isRegistered = true;
 
-        emit StudentRegistered(
-            students_[cardUID].studentId,
-            students_[cardUID].metadata,
-            tbaAddress
-        );
+        // emit StudentRegistered(
+        //     students_[cardUID].studentId,
+        //     students_[cardUID].metadata,
+        //     tbaAddress
+        // );
     }
 
     /// @notice Creates a new certification
