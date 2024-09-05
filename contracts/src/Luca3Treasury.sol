@@ -31,6 +31,13 @@ contract Luca3Treasury is ReentrancyGuard {
     /// @param usdcAmount The amount of USDC received
     event Swapped(address indexed tba, uint256 ethAmount, uint256 usdcAmount);
 
+    //Custom errors
+    error InsufficientUSDCInTreasury();
+    error MustSendETH();
+    error OnlyTBA();
+    error OnlyAdmin();
+    error USDCTransferFailed();
+
     /// @notice Constructor to initialize the contract
     /// @param _usdcToken The address of the USDC token contract
     constructor(address _usdcToken) {
@@ -43,8 +50,8 @@ contract Luca3Treasury is ReentrancyGuard {
     function swapEthForUsdc(
         string memory cardUID
     ) external payable nonReentrant {
-        require(msg.value > 0, "Must send ETH");
-        require(luca3Auth.isTBA(cardUID, msg.sender), "Only TBA can swap");
+        if (msg.value == 0) revert MustSendETH();
+        if (!luca3Auth.isTBA(cardUID, msg.sender)) revert OnlyTBA();
 
         (int224 ethUsdPrice, ) = IProxy(ETH_USD_PRICE_PROXY).read();
         (int224 usdcUsdPrice, ) = IProxy(USDC_USD_PRICE_PROXY).read();
@@ -52,13 +59,11 @@ contract Luca3Treasury is ReentrancyGuard {
         uint256 usdAmount = (msg.value * uint224(ethUsdPrice)) / 1e18;
         uint256 usdcAmount = (usdAmount * 1e6) / uint224(usdcUsdPrice);
 
-        require(
-            usdcToken.balanceOf(address(this)) >= usdcAmount,
-            "Insufficient USDC in treasury"
-        );
+        if (usdcToken.balanceOf(address(this)) < usdcAmount)
+            revert InsufficientUSDCInTreasury();
 
         bool success = usdcToken.transfer(msg.sender, usdcAmount);
-        require(success, "USDC transfer failed");
+        if (!success) revert USDCTransferFailed();
 
         emit Swapped(msg.sender, msg.value, usdcAmount);
     }
@@ -67,11 +72,9 @@ contract Luca3Treasury is ReentrancyGuard {
     /// @dev Only the admin of Luca3Auth can withdraw
     /// @param amount The amount of USDC to withdraw
     function withdrawUsdc(uint256 amount) external {
-        require(msg.sender == luca3Auth.admin_(), "Only admin can withdraw");
-        require(
-            usdcToken.balanceOf(address(this)) >= amount,
-            "Insufficient USDC in treasury"
-        );
+        if (msg.sender != luca3Auth.admin_()) revert OnlyAdmin();
+        if (usdcToken.balanceOf(address(this)) < amount)
+            revert InsufficientUSDCInTreasury();
 
         bool success = usdcToken.transfer(msg.sender, amount);
         require(success, "USDC transfer failed");
