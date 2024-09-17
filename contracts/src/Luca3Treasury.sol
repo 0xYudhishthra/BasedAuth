@@ -15,11 +15,11 @@ contract Luca3Treasury is ReentrancyGuard {
     IERC20 public usdcToken;
 
     /// @notice The address of the ETH/USD price proxy contract
-    address constant ETH_USD_PRICE_PROXY =
+    address public constant ETH_USD_PRICE_PROXY =
         0xB7ce7B052836c69EaB40a1D5C0b2baeE8eFB86C7;
 
     /// @notice The address of the USDC/USD price proxy contract
-    address constant USDC_USD_PRICE_PROXY =
+    address public constant USDC_USD_PRICE_PROXY =
         0x5fb6E1fBCB474E1aAfFb7C2104d731633D8c3D63;
 
     /// @notice The Luca3Auth contract instance
