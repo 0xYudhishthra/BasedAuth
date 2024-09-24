@@ -6,7 +6,7 @@ import { HoverBorderGradient } from "../components/ui/hover-border-gradient";
 export function StartButton() {
   return (
     <div className="m-5 flex justify-center text-center">
-      <Link href="/MainPage">
+      <Link href="/dashboard">
         <HoverBorderGradient
           containerClassName="rounded-full"
           as="button"
