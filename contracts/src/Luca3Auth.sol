@@ -35,8 +35,7 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
     address public erc6551RegistryAddress_;
     /// @notice Address of the ERC6551 implementation contract
     address public erc6551ImplementationAddress_;
-    /// @notice Address of the SNARK verifier contract
-    address public snarkVerifier_;
+
     /// @notice Address of the admin
     address public admin_;
     /// @notice Address of the Luca3Treasury contract
@@ -114,7 +113,6 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
     /// @param _symbol Symbol of the ERC721 token
     /// @param _erc6551RegistryAddress Address of the ERC6551 registry contract
     /// @param _erc6551ImplementationAddress Address of the ERC6551 implementation contract
-    /// @param _snarkVerifier Address of the SNARK verifier contract
     /// @param _admin Address of the admin
     /// @param _airnodeRrp Address of the Airnode RRP contract
     constructor(
@@ -123,14 +121,12 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
         address _erc6551RegistryAddress,
         address _erc6551ImplementationAddress,
         address _luca3Treasury,
-        address _snarkVerifier,
         address _admin,
         address _airnodeRrp
     ) ERC721(_name, _symbol) RrpRequesterV0(_airnodeRrp) {
         erc6551RegistryAddress_ = _erc6551RegistryAddress;
         erc6551ImplementationAddress_ = _erc6551ImplementationAddress;
         luca3Treasury_ = _luca3Treasury;
-        snarkVerifier_ = _snarkVerifier;
         admin_ = _admin;
     }
 
@@ -220,7 +216,6 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
         account.setAccountParameters(
             address(this),
             address(luca3Treasury_),
-            snarkVerifier_,
             cardUID
         );
 

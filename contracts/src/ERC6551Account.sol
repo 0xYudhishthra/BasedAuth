@@ -44,19 +44,16 @@ contract ERC6551Account is
     /// @notice Event emitted when the account parameters are set
     /// @param _luca3AuthAddress The address of the Luca3Auth contract
     /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
-    /// @param _snarkVerifierAddress The address of the SNARK verifier contract
     /// @param _cardUID The Card UID of the account
     event AccountParametersSet(
         address _luca3AuthAddress,
         address _luca3TreasuryAddress,
-        address _snarkVerifierAddress,
         string _cardUID
     );
 
     //Custom errors
     error InvalidSigner();
     error OnlyCallOperations();
-    error InvalidSNARKProof();
     error Luca3AuthAddressNotSet();
     error AmountMustBeGreaterThanZero();
     error InsufficientETHBalance();
@@ -64,10 +61,6 @@ contract ERC6551Account is
     /// @notice The current state of the account
     /// @dev This value is incremented each time the account's state changes
     uint256 public state;
-
-    /// @notice The address of the SNARK verifier contract
-    /// @dev This is the contract that will verify the SNARK proofs
-    address public snarkVerifier_;
 
     /// @notice The address of the Luca3Auth contract
     address public luca3AuthAddress_;
@@ -133,16 +126,11 @@ contract ERC6551Account is
     ) external view virtual returns (bytes4 magicValue) {
         bool isValid;
 
-        if (snarkVerifier_ != address(0)) {
-            (bool success, ) = snarkVerifier_.staticcall(signature);
-            isValid = success;
-        } else {
-            isValid = SignatureChecker.isValidSignatureNow(
-                owner(),
-                hash,
-                signature
-            );
-        }
+        isValid = SignatureChecker.isValidSignatureNow(
+            owner(),
+            hash,
+            signature
+        );
 
         if (isValid) {
             return IERC1271.isValidSignature.selector;
@@ -194,19 +182,11 @@ contract ERC6551Account is
         return signer == owner();
     }
 
-    /// @notice Claims a certification using SNARK proof verification
+    /// @notice Claims a certification
     /// @param certificationId The ID of the certification to claim
-    /// @param signature The SNARK proof
-    function claimCertification(
-        uint256 certificationId,
-        bytes memory signature
-    ) external {
+    function claimCertification(uint256 certificationId) external {
         if (!_isValidSigner(msg.sender)) revert InvalidSigner();
         if (luca3AuthAddress_ == address(0)) revert Luca3AuthAddressNotSet();
-
-        // Verify the SNARK proof
-        (bool success, ) = snarkVerifier_.call(signature);
-        if (!success) revert InvalidSNARKProof();
 
         // Mark the certification as claimed
         Luca3Auth luca3Auth = Luca3Auth(luca3AuthAddress_);
@@ -222,14 +202,10 @@ contract ERC6551Account is
 
     /// @notice Swaps ETH in the account for USDC using the Luca3Treasury contract
     /// @param amount The amount of ETH to swap
-    /// @param signature The SNARK proof
-    function swapEthForUsdc(uint256 amount, bytes memory signature) external {
+    function swapEthForUsdc(uint256 amount) external {
         if (amount == 0) revert AmountMustBeGreaterThanZero();
         if (address(this).balance < amount) revert InsufficientETHBalance();
         if (!_isValidSigner(msg.sender)) revert InvalidSigner();
-
-        (bool success, ) = snarkVerifier_.call(signature);
-        if (!success) revert InvalidSNARKProof();
 
         Luca3Treasury luca3Treasury = Luca3Treasury(
             payable(luca3TreasuryAddress_)
@@ -244,16 +220,12 @@ contract ERC6551Account is
     /// @param _usdcAddress The address of the USDC token contract
     /// @param _recipient The address to receive the USDC
     /// @param _amount The amount of USDC to transfer
-    /// @param signature The SNARK proof
     function transferUsdcToAddress(
         address _usdcAddress,
         address _recipient,
-        uint256 _amount,
-        bytes memory signature
+        uint256 _amount
     ) external {
         if (!_isValidSigner(msg.sender)) revert InvalidSigner();
-        (bool success, ) = snarkVerifier_.call(signature);
-        if (!success) revert InvalidSNARKProof();
 
         // Transfer USDC from this account to the recipient
         IERC20(_usdcAddress).transfer(_recipient, _amount);
@@ -262,22 +234,21 @@ contract ERC6551Account is
         ++state;
     }
 
-    /// @notice Sets the SNARK verifier address
-    /// @param _snarkVerifierAddress The address of the SNARK verifier contract
+    /// @notice Sets the account parameters
+    /// @param _luca3AuthAddress The address of the Luca3Auth contract
+    /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
+    /// @param _cardUID The Card UID of the account
     function setAccountParameters(
         address _luca3AuthAddress,
         address _luca3TreasuryAddress,
-        address _snarkVerifierAddress,
         string memory _cardUID
     ) external {
         luca3AuthAddress_ = _luca3AuthAddress;
         luca3TreasuryAddress_ = _luca3TreasuryAddress;
-        snarkVerifier_ = _snarkVerifierAddress;
         cardUID_ = _cardUID;
         emit AccountParametersSet(
             _luca3AuthAddress,
             _luca3TreasuryAddress,
-            _snarkVerifierAddress,
             _cardUID
         );
     }
