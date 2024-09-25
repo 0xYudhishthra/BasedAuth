@@ -4,7 +4,7 @@ import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
-import { cn } from "../../../../lib/utils";
+import { cn } from "@/lib/utils";
 
 interface Links {
   label: string;
@@ -90,7 +90,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-800 w-[300px] flex-shrink-0",
+          "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-800 w-[300px] flex-shrink-0 rounded-lg",
           className
         )}
         animate={{
@@ -181,7 +181,9 @@ export const SidebarLink = ({
       href={link.href}
       className={cn(
         "flex items-center justify-start gap-2 group/sidebar py-2",
-        activeLink === link.label ? "bg-neutral-700" : "hover:bg-neutral-800",
+        activeLink === link.label
+          ? `bg-neutral-700 rounded-lg ${open ? "w-full p-4" : "w-full"}`
+          : "hover:bg-neutral-800",
         className
       )}
       onClick={handleClick}

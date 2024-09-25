@@ -5,7 +5,7 @@ import { useActiveAccount } from "thirdweb/react";
 import { useRouter } from "next/navigation";
 import { FancyBackground } from "./components/Background";
 
-const Dashboard = () => {
+export default function Dashboard({ params }: { params: { cardUID: string } }) {
   const router = useRouter();
   const account = useActiveAccount();
 
@@ -18,19 +18,14 @@ const Dashboard = () => {
   return (
     <div className="relative w-full h-screen">
       {" "}
-      {/* Ensure the parent div is relative */}
       <div className="absolute inset-0 z-0 -top-28">
         {" "}
-        {/* Place FancyBackground behind */}
         <FancyBackground />
       </div>
       <div className="relative z-10 top-60">
         {" "}
-        {/* Ensure Preview is above FancyBackground */}
-        <Preview />
+        <Preview cardUID={params.cardUID} />
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

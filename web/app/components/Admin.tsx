@@ -12,7 +12,7 @@ type ApiResponse = {
   }[];
 };
 
-const ProfileContent = () => {
+const Admin = () => {
   const [apiKey, setApiKey] = useState("");
   const { address } = useAccount();
 
@@ -116,4 +116,4 @@ const ProfileContent = () => {
   );
 };
 
-export default ProfileContent;
+export default Admin;

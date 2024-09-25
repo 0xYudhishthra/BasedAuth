@@ -28,7 +28,7 @@ type ApiResponse = {
   }[];
 };
 
-const DeployContent = () => {
+const StudentTreasury = () => {
   const account = useActiveAccount();
   const [accountState, setAccountState] = useState<any>(undefined);
 
@@ -57,12 +57,12 @@ const DeployContent = () => {
     }
   };
 
-//   const { data: hash, error, isPending, writeContract } = useWriteContract();
+  //   const { data: hash, error, isPending, writeContract } = useWriteContract();
   const [message, setMessage] = useState("");
-//   const { isLoading: isConfirming, isSuccess: isConfirmed } =
-//     useWaitForTransactionReceipt({
-//       hash,
-//     });
+  //   const { isLoading: isConfirming, isSuccess: isConfirmed } =
+  //     useWaitForTransactionReceipt({
+  //       hash,
+  //     });
 
   // New state for user inputs
   const [name, setName] = useState("");
@@ -72,46 +72,46 @@ const DeployContent = () => {
   // New state for created Escrow address
   const [createdEscrowAddress, setCreatedEscrowAddress] = useState("");
 
-//   useEffect(() => {
-//     if (isConfirmed && createdEscrowAddress) {
-//       console.log("New Factory contract created at:", createdEscrowAddress);
-//       // You can perform additional actions here with the new contract address
-//     }
-//   }, [isConfirmed, createdEscrowAddress]);
+  //   useEffect(() => {
+  //     if (isConfirmed && createdEscrowAddress) {
+  //       console.log("New Factory contract created at:", createdEscrowAddress);
+  //       // You can perform additional actions here with the new contract address
+  //     }
+  //   }, [isConfirmed, createdEscrowAddress]);
 
-//   const handleDeploy = () => {
-//     try {
-//       writeContract({
-//         abi: newAbi,
-//         address: "0xC895D952B88217A65435C27Dd101f784b5046163",
-//         functionName: "createEscrow",
-//         args: [name, address1, address2],
-//       });
-//     } catch (error) {
-//       console.error("Error deploying contract", error);
-//       setMessage("Error deploying contract");
-//     }
-//   };
+  //   const handleDeploy = () => {
+  //     try {
+  //       writeContract({
+  //         abi: newAbi,
+  //         address: "0xC895D952B88217A65435C27Dd101f784b5046163",
+  //         functionName: "createEscrow",
+  //         args: [name, address1, address2],
+  //       });
+  //     } catch (error) {
+  //       console.error("Error deploying contract", error);
+  //       setMessage("Error deploying contract");
+  //     }
+  //   };
 
   // Watch for EscrowCreated event
-//   useWatchContractEvent({
-//     address: "0xC895D952B88217A65435C27Dd101f784b5046163",
-//     abi: newAbi,
-//     eventName: "EscrowCreated",
-//     onLogs(logs: Log[]) {
-//       console.log("EscrowCreated event:", logs);
-//       // Parse the log
-//       const parsedLog = logs[0] as ParsedEscrowCreatedLog;
-//       const newEscrowAddress = parsedLog.args.escrow;
-//       setCreatedEscrowAddress(newEscrowAddress);
+  //   useWatchContractEvent({
+  //     address: "0xC895D952B88217A65435C27Dd101f784b5046163",
+  //     abi: newAbi,
+  //     eventName: "EscrowCreated",
+  //     onLogs(logs: Log[]) {
+  //       console.log("EscrowCreated event:", logs);
+  //       // Parse the log
+  //       const parsedLog = logs[0] as ParsedEscrowCreatedLog;
+  //       const newEscrowAddress = parsedLog.args.escrow;
+  //       setCreatedEscrowAddress(newEscrowAddress);
 
-//       // After getting new Escrow Factory Contract Address
-//       if (account && newEscrowAddress) {
-//         addEscrowFactory(account, newEscrowAddress);
-//         claimName(account);
-//       }
-//     },
-//   });
+  //       // After getting new Escrow Factory Contract Address
+  //       if (account && newEscrowAddress) {
+  //         addEscrowFactory(account, newEscrowAddress);
+  //         claimName(account);
+  //       }
+  //     },
+  //   });
 
   const addEscrowFactory = async (
     organizationAddress: string,
@@ -235,4 +235,4 @@ const DeployContent = () => {
   );
 };
 
-export default DeployContent;
+export default StudentTreasury;
