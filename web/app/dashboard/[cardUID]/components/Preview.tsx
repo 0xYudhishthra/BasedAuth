@@ -19,13 +19,18 @@ import Admin from "@/app/components/Admin";
 import axios from "axios";
 import { getLuca3AuthAdmin } from "@/hooks/getLuca3AuthAdmin";
 import { useActiveAccount } from "thirdweb/react";
-import { a } from "framer-motion/client";
+import { getStudentData } from "@/hooks/getStudentData";
 
 interface IActiveLink {
   activeLink: string;
 }
 
 export function Preview({ cardUID }: { cardUID: string }) {
+  const [open, setOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState("Profile");
+  const account = useActiveAccount();
+  const { admin } = getLuca3AuthAdmin();
+
   const links = [
     {
       label: "Profile",
@@ -45,35 +50,6 @@ export function Preview({ cardUID }: { cardUID: string }) {
       ),
     },
   ];
-  const [open, setOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState("Profile");
-  const [ensName, setEnsName] = useState<string>("No ENS");
-  const [ensDomain, setEnsDomain] = useState<string>("");
-  const account = useActiveAccount();
-  const { admin } = getLuca3AuthAdmin();
-
-  useEffect(() => {
-    if (account) {
-      fetchAndSetName(account?.address);
-    }
-  }, [account]);
-
-  const fetchAndSetName = async (address: string) => {
-    try {
-      const response = await axios.get(`/api/get-name?address=${address}`);
-      console.log("Names:", response.data);
-
-      if (response.data && response.data.length > 0 && response.data[0].name) {
-        setEnsName(response.data[0].name);
-        setEnsDomain(response.data[0].domain);
-      } else {
-        setEnsName("No ENS");
-      }
-    } catch (error) {
-      console.error("Error fetching names:", error);
-      setEnsName("NoENS");
-    }
-  };
 
   return (
     <div
@@ -110,25 +86,6 @@ export function Preview({ cardUID }: { cardUID: string }) {
                 ))
               )}
             </div>
-          </div>
-          <div>
-            <SidebarLink
-              link={{
-                label: `${ensName}.${ensDomain}`,
-                href: "#",
-                icon: (
-                  <Image
-                    src="/Luca3.png"
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
-              }}
-              activeLink={activeLink}
-              setActiveLink={setActiveLink}
-            />
           </div>
         </SidebarBody>
       </Sidebar>
@@ -169,13 +126,13 @@ const LogoIcon = () => {
 const Dashboard = ({ activeLink }: IActiveLink) => {
   const renderContent = () => {
     switch (activeLink) {
-      case "profile":
+      case "Profile":
         return <StudentProfile />;
-      case "treasury":
+      case "Treasury":
         return <StudentTreasury />;
-      case "certificate":
+      case "Certificate":
         return <StudentCertification />;
-      case "admin":
+      case "Admin":
         return <Admin />;
       default:
         return <StudentProfile />;
@@ -184,7 +141,7 @@ const Dashboard = ({ activeLink }: IActiveLink) => {
 
   return (
     <div className="flex flex-1">
-      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-800 dark:border-neutral-700 bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+      <div className="pl-5 p-10 md:p-5 rounded-tl-2xl border border-neutral-800 dark:border-neutral-700 bg-neutral-900 flex flex-col gap-2 flex-1 w-full">
         {renderContent()}
       </div>
     </div>

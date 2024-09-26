@@ -1,4 +1,4 @@
-import { getContract } from "thirdweb";
+import { getContract, resolveMethod } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 import { useReadContract } from "thirdweb/react";
 import config from "./config.json";
@@ -13,7 +13,7 @@ const contract = getContract({
 export function getLuca3AuthAdmin() {
   const { data: admin, isLoading } = useReadContract({
     contract,
-    method: "admin_",
+    method: resolveMethod("admin_"),
     params: [],
   });
   return { admin, isLoading };

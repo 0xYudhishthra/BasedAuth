@@ -14,8 +14,12 @@ const contract = getContract({
 export function getStudentData(cardUID: string) {
   const { data: studentData, isLoading } = useReadContract({
     contract,
-    method: "students_",
+    method: resolveMethod("students_"),
     params: [cardUID],
   });
-  return { studentData, isLoading };
+
+  if (studentData?.[2] === "0x0000000000000000000000000000000000000000") {
+    return { studentData: {}, isLoading: false };
+  }
+  return { studentData, isLoading: false };
 }

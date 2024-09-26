@@ -7,14 +7,16 @@ import { client } from "../client";
 import { ConnectButton } from "thirdweb/react";
 import { baseSepolia } from "thirdweb/chains";
 import { inAppWallet } from "thirdweb/wallets";
+import { useRouter } from "next/navigation";
 
 const wallets = [inAppWallet()];
 
 const Navbar = () => {
+  const router = useRouter();
   return (
     <div className="m-5 flex relative justify-between z-10 bg-none">
       <h2 className="mt-3 bg-clip-text text-transparent text-center bg-gradient-to-b from-neutral-600 to-white text-2xl md:text-2xl lg:text-2xl font-sans relative z-20 font-bold tracking-tight">
-        Luca3Auth
+        <button onClick={() => router.push("/")}>Luca3Auth</button>
       </h2>
       <ConnectButton
         client={client}

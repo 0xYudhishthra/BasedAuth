@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useAccount, useReadContract } from "wagmi";
 import axios from "axios";
 import Card from "./Card";
+import { useActiveAccount } from "thirdweb/react";
 
 type ApiResponse = {
   data: {
@@ -14,17 +14,17 @@ type ApiResponse = {
 
 const StudentCertification = () => {
   const [apiKey, setApiKey] = useState("");
-  const { address } = useAccount();
+  const account = useActiveAccount();
 
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   // const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (address) {
-      fetchFactoryEscrow(address);
+    if (account) {
+      fetchFactoryEscrow(account.address);
     }
-  }, [address]);
+  }, [account]);
 
   const fetchFactoryEscrow = async (address: string) => {
     setIsLoading(true);

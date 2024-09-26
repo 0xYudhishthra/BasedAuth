@@ -42,3 +42,10 @@ export function registerStudent(
     isSuccess,
   };
 }
+
+// 1. Send transaction to register student
+// 2. Wait for transaction to be confirmed
+// 3. Wait for API3 to reply
+// 4. Listen for student registered event
+// 5. take student id and register ENS name
+// 6. Done!

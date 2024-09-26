@@ -22,7 +22,7 @@ export default function Dashboard({ params }: { params: { cardUID: string } }) {
         {" "}
         <FancyBackground />
       </div>
-      <div className="relative z-10 top-60">
+      <div className="relative z-10 top-40">
         {" "}
         <Preview cardUID={params.cardUID} />
       </div>

@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  useAccount,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-  useWatchContractEvent,
-} from "wagmi";
+
 import { useActiveAccount } from "thirdweb/react";
 import axios from "axios";
 import Card from "./Card";
