@@ -1,5 +1,11 @@
-import { useSendAndConfirmTransaction } from "thirdweb/react";
-import { getContract, prepareContractCall } from "thirdweb";
+import {
+  getContract,
+  prepareContractCall,
+  prepareTransaction,
+  sendTransaction,
+  waitForReceipt,
+  simulateTransaction,
+} from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
@@ -10,36 +16,38 @@ const contract = getContract({
   client,
 });
 
-export function registerStudent(
+export async function registerStudent(
+  account: any,
   cardUID: string,
   studentId: bigint,
   metadata: string
 ) {
-  const {
-    mutate: sendAndConfirmTx,
-    data: transactionReceipt,
-    isPending,
-    isError,
-    isIdle,
-    isPaused,
-    isSuccess,
-  } = useSendAndConfirmTransaction();
-
   const transaction = prepareContractCall({
     contract,
     method:
       "function registerStudentRequest(string cardUID, uint256 studentId, string metadata)",
     params: [cardUID, studentId, metadata],
   });
-  sendAndConfirmTx(transaction);
+
+  const { transactionHash } = await sendTransaction({
+    account,
+    transaction,
+  });
 
   return {
-    transactionReceipt,
-    isPending,
-    isError,
-    isIdle,
-    isPaused,
-    isSuccess,
+    transactionHash,
+  };
+}
+
+export async function waitForRegStudentReceipt(transactionHash: `0x${string}`) {
+  const receipt = await waitForReceipt({
+    client,
+    chain: baseSepolia,
+    transactionHash,
+  });
+
+  return {
+    receipt,
   };
 }
 

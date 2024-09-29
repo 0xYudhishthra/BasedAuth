@@ -11,9 +11,13 @@ export default function Dashboard({ params }: { params: { cardUID: string } }) {
 
   useEffect(() => {
     if (!account) {
-      router.push("/");
+      const timer = setTimeout(() => {
+        router.push("/");
+      }, 5000); // 5s delay
+
+      return () => clearTimeout(timer);
     }
-  }, [account]);
+  }, [account, router]);
 
   return (
     <div className="relative w-full h-screen">

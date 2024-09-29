@@ -31,8 +31,5 @@ export async function getTBACreationTx(tbaAddress: string) {
     (event) => event.args.tbaAddress === tbaAddress
   );
 
-  //get the transaction hash from the event
-  const transactionHash = studentRegisteredEvent?.transactionHash;
-  console.log(transactionHash);
-  return transactionHash;
+  return studentRegisteredEvent;
 }

@@ -92,33 +92,12 @@ const LoaderCore = ({
 export const MultiStepLoader = ({
   loadingStates,
   loading,
-  duration = 2000,
-  loop = true,
+  currentState = 0,
 }: {
   loadingStates: LoadingState[];
   loading?: boolean;
-  duration?: number;
-  loop?: boolean;
+  currentState?: number;
 }) => {
-  const [currentState, setCurrentState] = useState(0);
-
-  useEffect(() => {
-    if (!loading) {
-      setCurrentState(0);
-      return;
-    }
-    const timeout = setTimeout(() => {
-      setCurrentState((prevState) =>
-        loop
-          ? prevState === loadingStates.length - 1
-            ? 0
-            : prevState + 1
-          : Math.min(prevState + 1, loadingStates.length - 1)
-      );
-    }, duration);
-
-    return () => clearTimeout(timeout);
-  }, [currentState, loading, loop, loadingStates.length, duration]);
   return (
     <AnimatePresence mode="wait">
       {loading && (
