@@ -348,4 +348,39 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
     ) public view returns (bool) {
         return students_[cardUID].tbaAddress == walletAddress;
     }
+
+    /// @notice Returns the student data for a given card UID
+    /// @param cardUID Unique identifier for the student's card
+    /// @return The student data for the given card UID
+    function getStudentData(
+        string memory cardUID
+    ) public view returns (Student memory) {
+        return students_[cardUID];
+    }
+
+    /// @notice Returns the certification data for a given certification ID
+    /// @param certificationId ID of the certification
+    /// @return metadata The metadata for the given certification ID
+    /// @return isRegistered The registration status for the given certification ID
+    /// @return eligibleAddresses The eligible addresses for the given certification ID
+    function getCertificationData(
+        uint256 certificationId
+    )
+        public
+        view
+        returns (
+            string memory metadata,
+            bool isRegistered,
+            address[] memory eligibleAddresses
+        )
+    {
+        Certification storage cert = certifications_[certificationId];
+        return (cert.metadata, cert.isRegistered, cert.eligibleAddresses);
+    }
+
+    /// @notice Returns the admin address
+    /// @return The admin address
+    function getAdminAddress() public view returns (address) {
+        return admin_;
+    }
 }
