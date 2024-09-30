@@ -17,6 +17,7 @@ console.log(contract);
 export function getStudentData(cardUID: string) {
   const { data: studentData, isLoading } = useReadContract({
     contract,
+    // @ts-ignore
     method: resolveMethod("students_"),
     params: [cardUID],
   });

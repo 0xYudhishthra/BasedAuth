@@ -15,6 +15,7 @@ const contract = getContract({
 export function getLuca3AuthAdmin() {
   const { data: admin, isLoading } = useReadContract({
     contract,
+    // @ts-ignore
     method: resolveMethod("admin_"),
     params: [],
   });

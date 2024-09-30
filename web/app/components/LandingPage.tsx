@@ -152,7 +152,7 @@ export function LandingPage() {
               <p className="text-sm text-center text-gray-300 mb-5">
                 Your{" "}
                 <span className="underline decoration-dotted">
-                  APCard's cardUID
+                  APCard&apos;s cardUID
                 </span>{" "}
                 is the key to your
                 <span className="font-bold text-emerald-400 ml-1">
