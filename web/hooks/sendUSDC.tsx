@@ -5,28 +5,34 @@ import {
   sendTransaction,
   waitForReceipt,
   simulateTransaction,
+  resolveMethod,
 } from "thirdweb";
+import { useReadContract } from "thirdweb/react";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
 
-const contract = getContract({
-  address: config.Luca3Auth.contractAddress,
-  chain: baseSepolia,
-  client,
-});
+const getTBAContract = (tbaAddress: string) => {
+  return getContract({
+    address: tbaAddress as `0x${string}`,
+    chain: baseSepolia,
+    client,
+  });
+};
 
-export async function registerStudent(
+export async function sendUSDC(
   account: any,
-  cardUID: string,
-  studentId: bigint,
-  metadata: string
+  tbaAddress: string,
+  recipient: string,
+  amount: bigint
 ) {
+  const contract = getTBAContract(tbaAddress);
+
   const transaction = prepareContractCall({
     contract,
     method:
-      "function registerStudentRequest(string cardUID, uint256 studentId, string metadata)",
-    params: [cardUID, studentId, metadata],
+      "function transferUsdcToAddress(address _usdcAddress, address _recipient, uint256 _amount)",
+    params: [config.USDC.contractAddress, recipient, amount],
   });
 
   const { transactionHash } = await sendTransaction({
@@ -39,7 +45,7 @@ export async function registerStudent(
   };
 }
 
-export async function waitForRegStudentReceipt(transactionHash: `0x${string}`) {
+export async function waitForSendUSDCReceipt(transactionHash: `0x${string}`) {
   const receipt = await waitForReceipt({
     client,
     chain: baseSepolia,

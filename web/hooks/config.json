@@ -1,6 +1,9 @@
 {
+  "Luca3Treasury": {
+    "contractAddress": "0x594C634C0680aA2c5A0eEa732C60Ab6A53B51CF9"
+  },
   "Luca3Auth": {
-    "contractAddress": "0x482C9AA8b172E1dA64658249230dd12B2746cB72",
+    "contractAddress": "0xe4f4FA37dEC9C2f037d792757698202309a9f2b6",
     "abi": [
       {
         "type": "constructor",
@@ -141,12 +144,84 @@
       },
       {
         "type": "function",
+        "name": "getAdminAddress",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
         "name": "getApproved",
         "inputs": [
           { "name": "tokenId", "type": "uint256", "internalType": "uint256" }
         ],
         "outputs": [
           { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "getCertificationData",
+        "inputs": [
+          {
+            "name": "certificationId",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ],
+        "outputs": [
+          { "name": "metadata", "type": "string", "internalType": "string" },
+          { "name": "isRegistered", "type": "bool", "internalType": "bool" },
+          {
+            "name": "eligibleAddresses",
+            "type": "address[]",
+            "internalType": "address[]"
+          }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "getStudentData",
+        "inputs": [
+          { "name": "cardUID", "type": "string", "internalType": "string" }
+        ],
+        "outputs": [
+          {
+            "name": "",
+            "type": "tuple",
+            "internalType": "struct Luca3Auth.Student",
+            "components": [
+              {
+                "name": "studentId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "metadata",
+                "type": "string",
+                "internalType": "string"
+              },
+              {
+                "name": "tbaAddress",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "isRegistered",
+                "type": "bool",
+                "internalType": "bool"
+              },
+              {
+                "name": "passkeyAddress",
+                "type": "address",
+                "internalType": "address"
+              }
+            ]
+          }
         ],
         "stateMutability": "view"
       },
@@ -737,5 +812,8 @@
         ]
       }
     ]
+  },
+  "USDC": {
+    "contractAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
   }
 }
