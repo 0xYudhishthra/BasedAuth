@@ -52,11 +52,17 @@ contract ERC6551Account is
     );
 
     //Custom errors
-    error InvalidSigner();
-    error OnlyCallOperations();
-    error Luca3AuthAddressNotSet();
-    error AmountMustBeGreaterThanZero();
-    error InsufficientETHBalance();
+    error InvalidSigner(address signer, address owner);
+    error OnlyCallOperations(
+        address caller,
+        address to,
+        uint256 value,
+        bytes data,
+        uint8 operation
+    );
+    error Luca3AuthAddressNotSet(address luca3AuthAddress);
+    error AmountMustBeGreaterThanZero(uint256 amount);
+    error InsufficientETHBalance(uint256 balance, uint256 amount);
 
     /// @notice The current state of the account
     /// @dev This value is incremented each time the account's state changes
@@ -88,8 +94,10 @@ contract ERC6551Account is
         bytes calldata data,
         uint8 operation
     ) external payable virtual returns (bytes memory result) {
-        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
-        if (operation != 0) revert OnlyCallOperations();
+        if (!_isValidSigner(msg.sender))
+            revert InvalidSigner(msg.sender, owner());
+        if (operation != 0)
+            revert OnlyCallOperations(msg.sender, to, value, data, operation);
 
         ++state;
 
@@ -185,8 +193,10 @@ contract ERC6551Account is
     /// @notice Claims a certification
     /// @param certificationId The ID of the certification to claim
     function claimCertification(uint256 certificationId) external {
-        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
-        if (luca3AuthAddress_ == address(0)) revert Luca3AuthAddressNotSet();
+        if (!_isValidSigner(msg.sender))
+            revert InvalidSigner(msg.sender, owner());
+        if (luca3AuthAddress_ == address(0))
+            revert Luca3AuthAddressNotSet(luca3AuthAddress_);
 
         // Mark the certification as claimed
         Luca3Auth luca3Auth = Luca3Auth(luca3AuthAddress_);
@@ -203,9 +213,11 @@ contract ERC6551Account is
     /// @notice Swaps ETH in the account for USDC using the Luca3Treasury contract
     /// @param amount The amount of ETH to swap
     function swapEthForUsdc(uint256 amount) external {
-        if (amount == 0) revert AmountMustBeGreaterThanZero();
-        if (address(this).balance < amount) revert InsufficientETHBalance();
-        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
+        if (amount == 0) revert AmountMustBeGreaterThanZero(amount);
+        if (address(this).balance < amount)
+            revert InsufficientETHBalance(address(this).balance, amount);
+        if (!_isValidSigner(msg.sender))
+            revert InvalidSigner(msg.sender, owner());
 
         Luca3Treasury luca3Treasury = Luca3Treasury(
             payable(luca3TreasuryAddress_)
@@ -225,7 +237,8 @@ contract ERC6551Account is
         address _recipient,
         uint256 _amount
     ) external {
-        if (!_isValidSigner(msg.sender)) revert InvalidSigner();
+        if (!_isValidSigner(msg.sender))
+            revert InvalidSigner(msg.sender, owner());
 
         // Transfer USDC from this account to the recipient
         IERC20(_usdcAddress).transfer(_recipient, _amount);
