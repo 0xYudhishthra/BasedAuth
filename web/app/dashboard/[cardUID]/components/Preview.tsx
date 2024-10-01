@@ -1,12 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {
-  IconBrandTabler,
-  IconSettings,
-  IconUser,
-  IconWallet,
-  IconCertificate,
-} from "@tabler/icons-react";
+import { IconUser, IconWallet, IconCertificate } from "@tabler/icons-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
@@ -16,10 +10,8 @@ import StudentProfile from "@/app/components/StudentProfile";
 import StudentCertification from "@/app/components/StudentCertification";
 import StudentTreasury from "@/app/components/StudentTreasury";
 import Admin from "@/app/components/Admin";
-import axios from "axios";
 import { getLuca3AuthAdmin } from "@/hooks/getLuca3AuthAdmin";
 import { useActiveAccount } from "thirdweb/react";
-import { getStudentData } from "@/hooks/getStudentData";
 
 interface IActiveLink {
   activeLink: string;
@@ -30,8 +22,10 @@ export function Preview({ cardUID }: { cardUID: string }) {
   const [activeLink, setActiveLink] = useState("Profile");
   const account = useActiveAccount();
   const { admin } = getLuca3AuthAdmin();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingAdmin, setLoadingAdmin] = useState(true);
 
-  const links = [
+  const studentLinks = [
     {
       label: "Profile",
       href: "#",
@@ -51,6 +45,19 @@ export function Preview({ cardUID }: { cardUID: string }) {
     },
   ];
 
+  useEffect(() => {
+    if (account?.address && admin) {
+      console.log(admin);
+      if (admin.includes(account.address)) {
+        console.log("Admin");
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    }
+    setLoadingAdmin(false); // Admin check is complete, set loading to false
+  }, [account, admin]);
+
   return (
     <div
       className={cn(
@@ -63,7 +70,8 @@ export function Preview({ cardUID }: { cardUID: string }) {
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
-              {account?.address == admin ? (
+              {/* Show only the Admin option if isAdmin is true */}
+              {!loadingAdmin && isAdmin && (
                 <SidebarLink
                   link={{
                     label: "Admin",
@@ -75,21 +83,24 @@ export function Preview({ cardUID }: { cardUID: string }) {
                   activeLink={activeLink}
                   setActiveLink={setActiveLink}
                 />
-              ) : (
-                links.map((link, idx) => (
+              )}
+
+              {/* Show student links if not admin */}
+              {!loadingAdmin &&
+                !isAdmin &&
+                studentLinks.map((link, idx) => (
                   <SidebarLink
                     key={idx}
                     link={link}
                     activeLink={activeLink}
                     setActiveLink={setActiveLink}
                   />
-                ))
-              )}
+                ))}
             </div>
           </div>
         </SidebarBody>
       </Sidebar>
-      <Dashboard activeLink={activeLink} />
+      <Dashboard activeLink={activeLink} isAdmin={isAdmin} />
     </div>
   );
 }
@@ -123,7 +134,10 @@ const LogoIcon = () => {
   );
 };
 
-const Dashboard = ({ activeLink }: IActiveLink) => {
+const Dashboard = ({
+  activeLink,
+  isAdmin,
+}: IActiveLink & { isAdmin: boolean }) => {
   const renderContent = () => {
     switch (activeLink) {
       case "Profile":
