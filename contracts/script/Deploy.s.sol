@@ -6,6 +6,7 @@ import "../src/Luca3Auth.sol";
 import "../src/ERC6551Registry.sol";
 import "../src/ERC6551Account.sol";
 import "../src/Luca3Treasury.sol";
+import "../src/MockUSDC.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Deploy is Script {
@@ -96,11 +97,17 @@ contract Deploy is Script {
 
         string memory symbol = "L3A";
         address airnodeRrp = 0xa0AD79D995DdeeB18a14eAef56A549A04e3Aa1Bd;
-        address usdcToken = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
 
         // Deploy Luca3Treasury
-        Luca3Treasury luca3Treasury = new Luca3Treasury(address(usdcToken));
+        Luca3Treasury luca3Treasury = new Luca3Treasury();
         console.log("Deployed Luca3Treasury @", address(luca3Treasury));
+
+        // Deploy MockUSDC
+        MockUSDC mockUSDC = new MockUSDC(address(luca3Treasury));
+        console.log("Deployed MockUSDC @", address(mockUSDC));
+
+        // Set the USDC token contract address
+        luca3Treasury.setUSDC(address(mockUSDC));
 
         // Deploy Luca3Auth
         Luca3Auth luca3Auth = new Luca3Auth(
@@ -116,6 +123,9 @@ contract Deploy is Script {
 
         // Set the sponsor wallet
         luca3Treasury.updateLuca3Auth(address(luca3Auth));
+
+        // Mint 1_000_000 USDC to the treasury, 6 decimals
+        luca3Treasury.mintUSDC(1000000 * 10 ** 6);
 
         string[] memory inputs = new string[](9);
         inputs[0] = "npx";
