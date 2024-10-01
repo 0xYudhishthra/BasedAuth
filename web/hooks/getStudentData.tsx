@@ -12,8 +12,6 @@ const contract = getContract({
   abi: config.Luca3Auth.abi as Abi,
 });
 
-console.log(contract);
-
 export function getStudentData(cardUID: string) {
   const { data: studentData, isLoading } = useReadContract({
     contract,
@@ -21,9 +19,6 @@ export function getStudentData(cardUID: string) {
     method: resolveMethod("students_"),
     params: [cardUID],
   });
-
-  console.log(cardUID.length);
-  console.log(studentData);
 
   if (studentData?.[2] === "0x0000000000000000000000000000000000000000") {
     return { studentData: {}, isLoading: false };
