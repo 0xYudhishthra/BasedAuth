@@ -4,7 +4,6 @@ import "./globals.css";
 //import Navbar from "./components/Navbar";
 import { ThirdwebProvider } from "thirdweb/react";
 import Navbar from "./components/Navbar";
-import { baseSepolia } from "wagmi/chains";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
