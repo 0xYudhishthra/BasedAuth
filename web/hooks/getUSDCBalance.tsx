@@ -21,12 +21,6 @@ export function useUSDCBalance(tbaAccount: string | null) {
     return { data: null, isLoading: false, isError: true };
   }
 
-  console.log("Data:", data);
-  console.log(
-    "formattedBalance:",
-    formatUnits(data?.value ?? BigInt(0), data?.decimals ?? 18)
-  );
-
   //Format in the decimals of the token
   const formattedBalance = data
     ? formatUnits(data?.value ?? BigInt(0), data?.decimals ?? 18)
