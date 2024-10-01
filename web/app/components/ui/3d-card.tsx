@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import React, {
   createContext,
   useState,
@@ -10,6 +9,7 @@ import React, {
   useEffect,
 } from "react";
 
+// Create Context for mouse or gyroscopic movements
 const MouseEnterContext = createContext<
   [boolean, React.Dispatch<React.SetStateAction<boolean>>] | undefined
 >(undefined);
@@ -25,6 +25,7 @@ export const CardContainer = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMouseEntered, setIsMouseEntered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false); // Detect if the device is mobile
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -35,16 +36,72 @@ export const CardContainer = ({
     containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
   };
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseEnter = () => {
     setIsMouseEntered(true);
-    if (!containerRef.current) return;
   };
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
+  const handleMouseLeave = () => {
     setIsMouseEntered(false);
-    containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`;
+    if (containerRef.current) {
+      containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`;
+    }
   };
+
+  const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
+    if (containerRef.current) {
+      const rotateX = event.beta ? event.beta / 10 : 0;
+      const rotateY = event.gamma ? event.gamma / 10 : 0;
+      containerRef.current.style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+    }
+  };
+
+  const requestIOSPermission = async () => {
+    if (
+      typeof DeviceMotionEvent !== "undefined" &&
+      typeof (DeviceMotionEvent as any).requestPermission === "function"
+    ) {
+      try {
+        const permission = await (DeviceMotionEvent as any).requestPermission();
+        if (permission === "granted") {
+          window.addEventListener("deviceorientation", handleDeviceOrientation);
+        }
+      } catch (error) {
+        console.error(
+          "Permission request for DeviceMotionEvent was denied.",
+          error
+        );
+      }
+    } else {
+      // For non-iOS devices or older iOS versions that don't require permission
+      window.addEventListener("deviceorientation", handleDeviceOrientation);
+    }
+  };
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // Set a breakpoint for mobile
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    if (isMobile) {
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Handle iOS permission request for orientation access
+        requestIOSPermission();
+      } else {
+        window.addEventListener("deviceorientation", handleDeviceOrientation);
+      }
+    } else {
+      window.removeEventListener("deviceorientation", handleDeviceOrientation);
+    }
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+      window.removeEventListener("deviceorientation", handleDeviceOrientation);
+    };
+  }, [isMobile]);
+
   return (
     <MouseEnterContext.Provider value={[isMouseEntered, setIsMouseEntered]}>
       <div
@@ -58,9 +115,9 @@ export const CardContainer = ({
       >
         <div
           ref={containerRef}
-          onMouseEnter={handleMouseEnter}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={!isMobile ? handleMouseEnter : undefined}
+          onMouseMove={!isMobile ? handleMouseMove : undefined}
+          onMouseLeave={!isMobile ? handleMouseLeave : undefined}
           className={cn(
             "flex items-center justify-center relative transition-all duration-200 ease-linear",
             className
