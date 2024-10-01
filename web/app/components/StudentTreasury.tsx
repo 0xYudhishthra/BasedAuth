@@ -152,8 +152,12 @@ const StudentTreasury = () => {
         "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
       );
       setEthToUsdRate(response.data.ethereum.usd);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching ETH to USD rate:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const formattedError = errorMessage.split(" - ")[0];
+      setSwapStatus(`Swap failed with ${formattedError}`);
     }
   };
 
@@ -192,6 +196,14 @@ const StudentTreasury = () => {
       setSwapTransactionHash(transactionHash);
     } catch (error) {
       console.error(error);
+
+      // Extract error message if available
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const formattedError = errorMessage.split(" - ")[0];
+
+      // Set the error message in the swapStatus state
+      setSwapStatus(`Swap failed: ${formattedError}`);
     }
   };
 
@@ -240,7 +252,10 @@ const StudentTreasury = () => {
       setSendUSDCTransactionHash(transactionHash);
     } catch (error) {
       console.error(error);
-      setSendStatus("Send failed. Error occurred.");
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const formattedError = errorMessage.split(" - ")[0];
+      setSendStatus(`Send failed with ${formattedError}`);
     }
   };
 
@@ -271,7 +286,7 @@ const StudentTreasury = () => {
           </div>
         </>
       ),
-      link: "#",
+      link: "ethUSDCBalance",
     },
     {
       title: "Swap ETH to USDC",
@@ -290,15 +305,17 @@ const StudentTreasury = () => {
               ? `${usdcEquivalent.toFixed(2)} USDC`
               : "0 USDC"}
           </p>
-          <button
-            onClick={handleSwapEthToUsdc}
-            className="relative px-6 py-3 text-lg font-semibold rounded-md overflow-hidden group border-2 border-white mt-4"
-          >
-            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500 via-red-500 via-blue-500 via-cyan-500 via-violet-500 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
-            <span className="relative z-10 text-neutral-800 dark:text-neutral-100 group-hover:text-white transition-colors duration-500">
-              Swap
-            </span>
-          </button>
+          {studentData?.[2] && (
+            <button
+              onClick={handleSwapEthToUsdc}
+              className="relative px-6 py-3 text-lg font-semibold rounded-md overflow-hidden group border-2 border-white mt-4"
+            >
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500 via-red-500 via-blue-500 via-cyan-500 via-violet-500 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
+              <span className="relative z-10 text-neutral-800 dark:text-neutral-100 group-hover:text-white transition-colors duration-500">
+                Swap
+              </span>
+            </button>
+          )}
           {swapStatus && (
             <div className="text-sm mt-4 p-4 bg-gray-800 rounded-md">
               <p
@@ -330,7 +347,7 @@ const StudentTreasury = () => {
           )}
         </>
       ),
-      link: "#",
+      link: "swapETHToUSDC",
     },
     {
       title: "Send USDC",
@@ -350,15 +367,17 @@ const StudentTreasury = () => {
             onChange={(e) => setAmountToSend(e.target.value)}
             className="w-full p-2 mb-2 rounded bg-neutral-800"
           />
-          <button
-            onClick={handleSend}
-            className="relative px-6 py-3 text-lg font-semibold rounded-md overflow-hidden group border-2 border-white mt-4"
-          >
-            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500 via-red-500 via-blue-500 via-cyan-500 via-violet-500 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
-            <span className="relative z-10 text-neutral-800 dark:text-neutral-100 group-hover:text-white transition-colors duration-500">
-              Send
-            </span>
-          </button>
+          {studentData?.[2] && (
+            <button
+              onClick={handleSend}
+              className="relative px-6 py-3 text-lg font-semibold rounded-md overflow-hidden group border-2 border-white mt-4"
+            >
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500 via-red-500 via-blue-500 via-cyan-500 via-violet-500 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
+              <span className="relative z-10 text-neutral-800 dark:text-neutral-100 group-hover:text-white transition-colors duration-500">
+                Send
+              </span>
+            </button>
+          )}
           {sendStatus && (
             <div className="text-sm mt-4 p-4 bg-gray-800 rounded-md">
               <p
@@ -392,7 +411,7 @@ const StudentTreasury = () => {
           )}
         </>
       ),
-      link: "#",
+      link: "sendUSDC",
     },
   ];
 
