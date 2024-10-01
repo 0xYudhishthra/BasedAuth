@@ -286,6 +286,9 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
         if (!certifications_[certificationId].isRegistered) {
             revert CertificationDoesNotExist(certificationId);
         }
+        if (certifications_[certificationId].hasClaimed[studentTBA]) {
+            revert AlreadyClaimed(certificationId, studentTBA);
+        }
 
         bool isEligible = false;
         for (
