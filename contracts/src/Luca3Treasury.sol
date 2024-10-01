@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./MockUSDC.sol";
 import "./interfaces/IProxy.sol";
 import "./Luca3Auth.sol";
 
@@ -12,7 +13,7 @@ import "./Luca3Auth.sol";
 /// @dev Inherits from ReentrancyGuard to prevent reentrancy attacks
 contract Luca3Treasury is ReentrancyGuard {
     /// @notice The USDC token contract
-    IERC20 public usdcToken;
+    MockUSDC public usdcToken;
 
     /// @notice The address of the ETH/USD price proxy contract
     address public ETH_USD_PRICE_PROXY =
@@ -37,12 +38,6 @@ contract Luca3Treasury is ReentrancyGuard {
     error OnlyTBA();
     error OnlyAdmin();
     error USDCTransferFailed();
-
-    /// @notice Constructor to initialize the contract
-    /// @param _usdcToken The address of the USDC token contract
-    constructor(address _usdcToken) {
-        usdcToken = IERC20(_usdcToken);
-    }
 
     /// @notice Swaps ETH for USDC
     /// @dev Only token-bound accounts can perform this swap
@@ -83,18 +78,41 @@ contract Luca3Treasury is ReentrancyGuard {
     /// @notice Allows the contract to receive ETH
     receive() external payable {}
 
-    //Function to update Luca3Auth address
+    /// @notice Set the USDC token contract address
+    /// @param _usdcToken Address of the USDC token contract
+    function setUSDC(address _usdcToken) external {
+        usdcToken = MockUSDC(_usdcToken);
+    }
+
+    /// @notice Updates the Luca3Auth contract address
+    /// @param _luca3Auth Address of the Luca3Auth contract
     function updateLuca3Auth(address _luca3Auth) external {
         luca3Auth = Luca3Auth(_luca3Auth);
     }
 
-    //Function to update ETH/USD price proxy address
+    /// @notice Updates the ETH/USD price proxy address
+    /// @param _ethUsdPriceProxy Address of the ETH/USD price proxy contract
     function updateETHUSDPriceProxy(address _ethUsdPriceProxy) external {
         ETH_USD_PRICE_PROXY = _ethUsdPriceProxy;
     }
 
-    //Function to update USDC/USD price proxy address
+    /// @notice Updates the USDC/USD price proxy address
+    /// @param _usdcUsdPriceProxy Address of the USDC/USD price proxy contract
     function updateUSDCUSDPriceProxy(address _usdcUsdPriceProxy) external {
         USDC_USD_PRICE_PROXY = _usdcUsdPriceProxy;
+    }
+
+    /// @notice Mints USDC to the treasury
+    /// @param amount The amount of USDC to mint
+    function mintUSDC(uint256 amount) external {
+        if (msg.sender != luca3Auth.admin_()) revert OnlyAdmin();
+        usdcToken.mint(amount);
+    }
+
+    /// @notice Burns USDC from the treasury
+    /// @param amount The amount of USDC to burn
+    function burnUSDC(uint256 amount) external {
+        if (msg.sender != luca3Auth.admin_()) revert OnlyAdmin();
+        usdcToken.burn(amount);
     }
 }
