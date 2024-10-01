@@ -9,11 +9,13 @@ import {
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
+import { Abi } from "thirdweb/utils";
 
 const contract = getContract({
   address: config.Luca3Auth.contractAddress,
   chain: baseSepolia,
   client,
+  abi: config.Luca3Auth.abi as Abi,
 });
 
 export async function registerStudent(
