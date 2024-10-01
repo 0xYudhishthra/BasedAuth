@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThirdwebProvider } from "thirdweb/react";
 import Navbar from "./components/Navbar";
 import FontLoader from "./components/FontLoader";
+import AutoScrollWrapper from "./components/useAutoScrollOnFocus";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -36,13 +37,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <FontLoader />
         <ThirdwebProvider>
           <Navbar></Navbar>
-          {children}
+          <AutoScrollWrapper>{children}</AutoScrollWrapper>
         </ThirdwebProvider>
       </body>
     </html>
