@@ -6,10 +6,18 @@ import Link from "next/link";
 import { client } from "../client";
 import { ConnectButton } from "thirdweb/react";
 import { baseSepolia } from "thirdweb/chains";
-import { inAppWallet } from "thirdweb/wallets";
+import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { useRouter } from "next/navigation";
 
-const wallets = [inAppWallet()];
+const wallets = [
+  inAppWallet({
+    smartAccount: {
+      chain: baseSepolia,
+      sponsorGas: true,
+    },
+  }),
+  createWallet("io.metamask"),
+];
 
 const Navbar = () => {
   const router = useRouter();
@@ -36,6 +44,10 @@ const Navbar = () => {
           showThirdwebBranding: false,
         }}
         showAllWallets={false}
+        accountAbstraction={{
+          chain: baseSepolia,
+          sponsorGas: true,
+        }}
       />
     </div>
   );
