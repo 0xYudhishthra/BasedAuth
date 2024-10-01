@@ -234,15 +234,8 @@
     ]
   },
   "Luca3Treasury": {
-    "contractAddress": "0x985e962053388B9DaB7630f74507689388b66963",
+    "contractAddress": "0x3d6134D8293BF910EC0204e520C7737C1a72f874",
     "abi": [
-      {
-        "type": "constructor",
-        "inputs": [
-          { "name": "_usdcToken", "type": "address", "internalType": "address" }
-        ],
-        "stateMutability": "nonpayable"
-      },
       { "type": "receive", "stateMutability": "payable" },
       {
         "type": "function",
@@ -264,6 +257,15 @@
       },
       {
         "type": "function",
+        "name": "burnUSDC",
+        "inputs": [
+          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
         "name": "luca3Auth",
         "inputs": [],
         "outputs": [
@@ -274,6 +276,24 @@
           }
         ],
         "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "mintUSDC",
+        "inputs": [
+          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "setUSDC",
+        "inputs": [
+          { "name": "_usdcToken", "type": "address", "internalType": "address" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
       },
       {
         "type": "function",
@@ -324,7 +344,7 @@
         "name": "usdcToken",
         "inputs": [],
         "outputs": [
-          { "name": "", "type": "address", "internalType": "contract IERC20" }
+          { "name": "", "type": "address", "internalType": "contract MockUSDC" }
         ],
         "stateMutability": "view"
       },
@@ -371,7 +391,7 @@
     ]
   },
   "Luca3Auth": {
-    "contractAddress": "0xBdf824Fe5c1a12Ee474d88238B7B08428b2Aa806",
+    "contractAddress": "0xfca6F037f3Dfa9a10d01a2720ae5bA7E7B044a81",
     "abi": [
       {
         "type": "constructor",
@@ -1182,6 +1202,6 @@
     ]
   },
   "USDC": {
-    "contractAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+    "contractAddress": "0x5c9Bd57011D394e2dFA8F9B7b669C8c0F263531F"
   }
 }
