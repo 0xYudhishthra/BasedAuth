@@ -5,6 +5,8 @@ import "forge-std/Test.sol";
 import "../src/Luca3Auth.sol";
 import "../src/ERC6551Registry.sol";
 import "../src/ERC6551Account.sol";
+import "../src/Luca3Treasury.sol";
+import "../src/MockUSDC.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "forge-std/console.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -129,8 +131,15 @@ contract Luca3AuthTest is Test {
         console.log("Deployed ERC6551Registry @", address(registry));
 
         // Deploy Luca3Treasury
-        luca3Treasury = new Luca3Treasury(address(usdcToken));
+        luca3Treasury = new Luca3Treasury();
         console.log("Deployed Luca3Treasury @", address(luca3Treasury));
+
+        // Deploy MockUSDC
+        MockUSDC mockUSDC = new MockUSDC(address(luca3Treasury));
+        console.log("Deployed MockUSDC @", address(mockUSDC));
+
+        // Set the USDC token contract address
+        luca3Treasury.setUSDC(address(mockUSDC));
 
         luca3Auth = new Luca3Auth(
             name,
