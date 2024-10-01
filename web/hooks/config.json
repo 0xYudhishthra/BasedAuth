@@ -1,9 +1,377 @@
 {
+  "ERC6551Account": {
+    "abi": [
+      { "type": "receive", "stateMutability": "payable" },
+      {
+        "type": "function",
+        "name": "cardUID_",
+        "inputs": [],
+        "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "claimCertification",
+        "inputs": [
+          {
+            "name": "certificationId",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "execute",
+        "inputs": [
+          { "name": "to", "type": "address", "internalType": "address" },
+          { "name": "value", "type": "uint256", "internalType": "uint256" },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "operation", "type": "uint8", "internalType": "uint8" }
+        ],
+        "outputs": [
+          { "name": "result", "type": "bytes", "internalType": "bytes" }
+        ],
+        "stateMutability": "payable"
+      },
+      {
+        "type": "function",
+        "name": "isValidSignature",
+        "inputs": [
+          { "name": "hash", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "signature", "type": "bytes", "internalType": "bytes" }
+        ],
+        "outputs": [
+          { "name": "magicValue", "type": "bytes4", "internalType": "bytes4" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "isValidSigner",
+        "inputs": [
+          { "name": "signer", "type": "address", "internalType": "address" },
+          { "name": "", "type": "bytes", "internalType": "bytes" }
+        ],
+        "outputs": [{ "name": "", "type": "bytes4", "internalType": "bytes4" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "luca3AuthAddress_",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "luca3TreasuryAddress_",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "setAccountParameters",
+        "inputs": [
+          {
+            "name": "_luca3AuthAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "_luca3TreasuryAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          { "name": "_cardUID", "type": "string", "internalType": "string" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "state",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "uint256", "internalType": "uint256" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "supportsInterface",
+        "inputs": [
+          { "name": "interfaceId", "type": "bytes4", "internalType": "bytes4" }
+        ],
+        "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+        "stateMutability": "pure"
+      },
+      {
+        "type": "function",
+        "name": "swapEthForUsdc",
+        "inputs": [
+          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "token",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "uint256", "internalType": "uint256" },
+          { "name": "", "type": "address", "internalType": "address" },
+          { "name": "", "type": "uint256", "internalType": "uint256" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "transferUsdcToAddress",
+        "inputs": [
+          {
+            "name": "_usdcAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "_recipient",
+            "type": "address",
+            "internalType": "address"
+          },
+          { "name": "_amount", "type": "uint256", "internalType": "uint256" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "event",
+        "name": "AccountParametersSet",
+        "inputs": [
+          {
+            "name": "_luca3AuthAddress",
+            "type": "address",
+            "indexed": false,
+            "internalType": "address"
+          },
+          {
+            "name": "_luca3TreasuryAddress",
+            "type": "address",
+            "indexed": false,
+            "internalType": "address"
+          },
+          {
+            "name": "_cardUID",
+            "type": "string",
+            "indexed": false,
+            "internalType": "string"
+          }
+        ],
+        "anonymous": false
+      },
+      {
+        "type": "error",
+        "name": "AmountMustBeGreaterThanZero",
+        "inputs": [
+          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+        ]
+      },
+      {
+        "type": "error",
+        "name": "InsufficientETHBalance",
+        "inputs": [
+          { "name": "balance", "type": "uint256", "internalType": "uint256" },
+          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+        ]
+      },
+      {
+        "type": "error",
+        "name": "InvalidSigner",
+        "inputs": [
+          { "name": "signer", "type": "address", "internalType": "address" },
+          { "name": "owner", "type": "address", "internalType": "address" }
+        ]
+      },
+      {
+        "type": "error",
+        "name": "Luca3AuthAddressNotSet",
+        "inputs": [
+          {
+            "name": "luca3AuthAddress",
+            "type": "address",
+            "internalType": "address"
+          }
+        ]
+      },
+      {
+        "type": "error",
+        "name": "OnlyCallOperations",
+        "inputs": [
+          { "name": "caller", "type": "address", "internalType": "address" },
+          { "name": "to", "type": "address", "internalType": "address" },
+          { "name": "value", "type": "uint256", "internalType": "uint256" },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "operation", "type": "uint8", "internalType": "uint8" }
+        ]
+      }
+    ]
+  },
   "Luca3Treasury": {
-    "contractAddress": "0x594C634C0680aA2c5A0eEa732C60Ab6A53B51CF9"
+    "contractAddress": "0x985e962053388B9DaB7630f74507689388b66963",
+    "abi": [
+      {
+        "type": "constructor",
+        "inputs": [
+          { "name": "_usdcToken", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "nonpayable"
+      },
+      { "type": "receive", "stateMutability": "payable" },
+      {
+        "type": "function",
+        "name": "ETH_USD_PRICE_PROXY",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "USDC_USD_PRICE_PROXY",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "address" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "luca3Auth",
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "",
+            "type": "address",
+            "internalType": "contract Luca3Auth"
+          }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "swapEthForUsdc",
+        "inputs": [
+          { "name": "cardUID", "type": "string", "internalType": "string" }
+        ],
+        "outputs": [],
+        "stateMutability": "payable"
+      },
+      {
+        "type": "function",
+        "name": "updateETHUSDPriceProxy",
+        "inputs": [
+          {
+            "name": "_ethUsdPriceProxy",
+            "type": "address",
+            "internalType": "address"
+          }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "updateLuca3Auth",
+        "inputs": [
+          { "name": "_luca3Auth", "type": "address", "internalType": "address" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "updateUSDCUSDPriceProxy",
+        "inputs": [
+          {
+            "name": "_usdcUsdPriceProxy",
+            "type": "address",
+            "internalType": "address"
+          }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "usdcToken",
+        "inputs": [],
+        "outputs": [
+          { "name": "", "type": "address", "internalType": "contract IERC20" }
+        ],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "withdrawUsdc",
+        "inputs": [
+          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "event",
+        "name": "Swapped",
+        "inputs": [
+          {
+            "name": "tba",
+            "type": "address",
+            "indexed": true,
+            "internalType": "address"
+          },
+          {
+            "name": "ethAmount",
+            "type": "uint256",
+            "indexed": false,
+            "internalType": "uint256"
+          },
+          {
+            "name": "usdcAmount",
+            "type": "uint256",
+            "indexed": false,
+            "internalType": "uint256"
+          }
+        ],
+        "anonymous": false
+      },
+      { "type": "error", "name": "InsufficientUSDCInTreasury", "inputs": [] },
+      { "type": "error", "name": "MustSendETH", "inputs": [] },
+      { "type": "error", "name": "OnlyAdmin", "inputs": [] },
+      { "type": "error", "name": "OnlyTBA", "inputs": [] },
+      { "type": "error", "name": "ReentrancyGuardReentrantCall", "inputs": [] },
+      { "type": "error", "name": "USDCTransferFailed", "inputs": [] }
+    ]
   },
   "Luca3Auth": {
-    "contractAddress": "0xe4f4FA37dEC9C2f037d792757698202309a9f2b6",
+    "contractAddress": "0xBdf824Fe5c1a12Ee474d88238B7B08428b2Aa806",
     "abi": [
       {
         "type": "constructor",
