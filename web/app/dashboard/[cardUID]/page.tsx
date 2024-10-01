@@ -13,18 +13,18 @@ export default function Dashboard({ params }: { params: { cardUID: string } }) {
     if (!account) {
       const timer = setTimeout(() => {
         router.push("/");
-      }, 5000); // 5s delay
+      }, 10000); // 10s delay
 
       return () => clearTimeout(timer);
     }
   }, [account, router]);
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="relative w-full h-screen overflow-y-auto">
       <div className="absolute inset-0 z-0 -top-28">
         <FancyBackground />
       </div>
-      <div className="relative z-10 top-40 md:top-28">
+      <div className="relative z-10 top-28 md:top-56">
         <Preview cardUID={params.cardUID} />
       </div>
     </div>
