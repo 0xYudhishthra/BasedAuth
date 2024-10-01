@@ -11,12 +11,15 @@ import { useReadContract } from "thirdweb/react";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
+import { Abi } from "thirdweb/utils";
 
 const getTBAContract = (tbaAddress: string) => {
   return getContract({
     address: tbaAddress as `0x${string}`,
     chain: baseSepolia,
     client,
+    abi:
+      (config.ERC6551Account.abi as Abi) || (config.Luca3Treasury.abi as Abi),
   });
 };
 
