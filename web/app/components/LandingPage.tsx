@@ -32,9 +32,10 @@ export function LandingPage() {
     const userAgent = navigator.userAgent.toLowerCase();
     if (userAgent.includes("win")) return "Windows";
     if (userAgent.includes("macintosh")) return "macOS";
-    if (userAgent.includes("linux")) return "Linux";
+    if (userAgent.includes("linux") && !userAgent.includes("android"))
+      return "Linux";
     if (userAgent.includes("iPhone")) return "iOS";
-    if (userAgent.includes("AppleWebKit")) return "Android";
+    if (userAgent.includes("Android")) return "Android";
     return "Unknown";
   };
 
