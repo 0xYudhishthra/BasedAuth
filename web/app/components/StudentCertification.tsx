@@ -87,6 +87,9 @@ const StudentCertification: React.FC = () => {
     try {
       setClaimStatus("Claiming...");
 
+      //disable the claim button
+      document.getElementById("claim-button")?.setAttribute("disabled", "true");
+
       console.log("studentData", studentData?.[2]);
 
       const { transactionHash } = await claimCertification(
@@ -105,6 +108,9 @@ const StudentCertification: React.FC = () => {
         setClaimStatus(
           `Successfully claimed certification ${certificationId}.`
         );
+
+        //enable the claim button
+        document.getElementById("claim-button")?.removeAttribute("disabled");
       } else {
         setClaimStatus("Claim failed.");
       }
@@ -112,8 +118,14 @@ const StudentCertification: React.FC = () => {
       console.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      const formattedError = errorMessage.split(" - ")[0];
-      setClaimStatus(`Claim failed with ${formattedError}`);
+      if (errorMessage.includes("0x7ba5ffb5")) {
+        setClaimStatus(
+          "Invalid Signer detected. Please connect to the correct wallet."
+        );
+      } else {
+        const formattedError = errorMessage.split(" - ")[0];
+        setClaimStatus(`Claim failed with ${formattedError}`);
+      }
     }
   };
 
@@ -122,10 +134,10 @@ const StudentCertification: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className="mb-20">
       {/* Conditionally render InfiniteMovingCards if there are certifications */}
       {certificationItems.length > 0 && (
-        <div className="bg-neutral-900 rounded-lg p-4">
+        <div className="bg-neutral-900 rounded-lg p-4 mb-10">
           <h2 className="text-s font-bold mb-2">Your Certifications</h2>
 
           {/* Pass the fetched certs to InfiniteMovingCards */}
@@ -138,32 +150,32 @@ const StudentCertification: React.FC = () => {
         </div>
       )}
 
-      {/* Always show the claim section, only if there exists a TBA */}
       {studentData?.[2] ? (
         <div className="p-4">
           <h2 className="text-xl font-bold mb-4">Claim New Certification</h2>
 
-          {/* Flex container for input, button, and status */}
-          <div className="flex items-center space-x-4">
+          {/* Container for input, button, and status */}
+          <div className="flex flex-col items-start space-y-4">
             <input
               type="text"
               placeholder="Certification ID"
               value={certificationId || ""}
               onChange={(e) => setCertificationId(e.target.value)}
-              className="w-48 p-2 rounded bg-neutral-800"
+              className="w-full p-2 rounded bg-neutral-800 border-2 border-white"
             />
             <button
+              id="claim-button"
               onClick={handleClaim}
-              className="w-48 px-6 py-1 text-xl font-semibold rounded-md overflow-hidden group border-2 border-white whitespace-nowrap relative"
+              className="w-full px-6 py-1 text-xl font-semibold rounded-md overflow-hidden group border-2 border-white whitespace-nowrap relative"
             >
               <span className="relative z-10 text-neutral-100 group-hover:text-white transition-colors duration-500">
                 Claim
               </span>
             </button>
 
-            {/* Status Box Beside the Button */}
+            {/* Status Box */}
             {claimStatus && (
-              <div className="text-sm px-4 py-2 bg-gray-800 rounded-md">
+              <div className="text-sm px-4 py-2 bg-gray-800 rounded-md w-full max-w-md">
                 <p
                   className={`${
                     claimStatus.startsWith("Successfully claimed")
