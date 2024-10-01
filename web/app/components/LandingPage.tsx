@@ -157,7 +157,7 @@ export function LandingPage() {
       icon: <IconScan size={48} color="white" />,
       title: "Scan APCard",
       description:
-        "Use your device's camera to scan your APCard for verification.",
+        "Use your device's camera to scan your APCard barcode for verification.",
       action: handleScan,
       showOn: ["iOS"],
     },
@@ -172,7 +172,8 @@ export function LandingPage() {
     {
       icon: <IconTypeface size={48} color="white" />,
       title: "Type CardUID",
-      description: "Type the CardUID from your APCard for verification.",
+      description:
+        "Type the CardUID from your APCard for verification, this can be student ID too.",
       action: handleType,
       showOn: ["Windows", "macOS", "Linux", "Android", "iOS"],
     },
