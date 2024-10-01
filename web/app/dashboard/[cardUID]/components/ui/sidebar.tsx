@@ -90,11 +90,11 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-800 w-[300px] flex-shrink-0 rounded-lg",
+          "h-full px-4 py-4 hidden md:flex md:flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700 w-[300px] flex-shrink-0 rounded-lg shadow-lg",
           className
         )}
         animate={{
-          width: animate ? (open ? "300px" : "60px") : "300px",
+          width: animate ? (open ? "300px" : "80px") : "300px",
         }}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
@@ -116,14 +116,14 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-800 w-full"
+          "h-12 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700 w-full"
         )}
         {...props}
       >
         <div className="flex justify-end z-20 w-full">
           <IconMenu2
-            className="text-neutral-200"
-            onClick={() => setOpen(!open)} // Toggle sidebar open state on menu icon click
+            className="text-neutral-200 cursor-pointer hover:text-white transition-colors"
+            onClick={() => setOpen(!open)}
           />
         </div>
         <AnimatePresence>
@@ -137,14 +137,14 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-neutral-900 p-10 z-[100] flex flex-col justify-between",
+                "fixed h-full w-full inset-0 bg-neutral-900 p-10 z-[100] flex flex-col justify-between shadow-lg",
                 className
               )}
             >
               {/* Close button */}
               <div
-                className="absolute right-10 top-10 z-50 text-neutral-200" // Fixed typo for `z-50text-neutral-200`
-                onClick={() => setOpen(false)} // Close sidebar on X icon click
+                className="absolute right-10 top-10 z-50 text-neutral-200 cursor-pointer hover:text-white transition-colors"
+                onClick={() => setOpen(false)}
               >
                 <IconX />
               </div>
@@ -170,34 +170,34 @@ export const SidebarLink = ({
   setActiveLink: (label: string) => void;
   props?: LinkProps;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, setOpen, animate } = useSidebar();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setActiveLink(link.label);
+    if (window.innerWidth <= 768) {
+      setOpen(false);
+    }
   };
 
   return (
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar py-2",
-        activeLink === link.label
-          ? `bg-neutral-700 rounded-lg ${open ? "w-full p-4" : "w-full"}`
-          : "hover:bg-neutral-800",
+        "flex items-center justify-start gap-2 group/sidebar py-3 px-3 rounded-lg hover:bg-neutral-700 hover:shadow-lg transition-all duration-150",
+        activeLink === link.label ? `bg-neutral-800` : "",
         className
       )}
       onClick={handleClick}
       {...props}
     >
       {link.icon}
-
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+        className="text-neutral-200 text-sm group-hover/sidebar:text-white transition-colors duration-150 whitespace-pre"
       >
         {link.label}
       </motion.span>
