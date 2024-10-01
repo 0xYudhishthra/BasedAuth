@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-//import Navbar from "./components/Navbar";
 import { ThirdwebProvider } from "thirdweb/react";
 import Navbar from "./components/Navbar";
 
@@ -20,6 +19,13 @@ export const metadata: Metadata = {
   title: "Luca3Auth",
   description:
     "Luca3Auth is the easiest way to perform any blockchain transactions with a student ID",
+  icons: [
+    {
+      rel: "icon",
+      url: "/favicon.ico",
+    },
+  ],
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -28,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
