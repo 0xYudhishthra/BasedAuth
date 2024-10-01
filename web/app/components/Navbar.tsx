@@ -40,7 +40,7 @@ const Navbar = () => {
           label: "Get Started",
         }}
         connectModal={{
-          title: "Student Auth with Luca3Auth",
+          title: "APCard Auth with Luca3Auth",
           showThirdwebBranding: false,
         }}
         showAllWallets={false}
