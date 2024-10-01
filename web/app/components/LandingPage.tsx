@@ -31,11 +31,17 @@ export function LandingPage() {
   const getOS = (): string => {
     const userAgent = navigator.userAgent.toLowerCase();
     if (userAgent.includes("win")) return "Windows";
-    if (userAgent.includes("macintosh")) return "macOS";
+    if (
+      userAgent.includes("macintosh") &&
+      !userAgent.includes("iphone") &&
+      !userAgent.includes("ipad")
+    )
+      return "macOS";
     if (userAgent.includes("linux") && !userAgent.includes("android"))
       return "Linux";
-    if (userAgent.includes("iPhone")) return "iOS";
-    if (userAgent.includes("Android")) return "Android";
+    if (userAgent.includes("iphone") || userAgent.includes("ipad"))
+      return "iOS";
+    if (userAgent.includes("android")) return "Android";
     return "Unknown";
   };
 
