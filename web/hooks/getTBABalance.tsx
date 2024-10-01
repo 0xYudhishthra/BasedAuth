@@ -10,6 +10,5 @@ export async function getTBABalance(address: string) {
     address: address,
   });
   const balanceInEth = formatEther(balance);
-  console.log(balanceInEth);
   return balanceInEth;
 }
