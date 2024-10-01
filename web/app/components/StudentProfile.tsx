@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import axios from "axios";
 import Card from "./Card";
 import { MediaRenderer, useActiveAccount } from "thirdweb/react";
-import { upload } from "thirdweb/storage";
+import { upload, UploadOptions } from "thirdweb/storage";
 import { client } from "../client";
 import { getStudentData } from "../../hooks/getStudentData";
 import {
@@ -42,7 +42,6 @@ const StudentProfile: React.FC = () => {
   const fetchName = async (address: string) => {
     try {
       const response = await axios.get(`/api/get-name?address=${address}`);
-      console.log("Names:", response.data);
 
       if (response.data && response.data.length > 0 && response.data[0].name) {
         setEnsName(response.data[0].name);
@@ -59,7 +58,6 @@ const StudentProfile: React.FC = () => {
         name,
         userWalletAddress: nftWalletAddress,
       });
-      console.log("Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error claiming name:", error);
@@ -206,7 +204,6 @@ const StudentProfile: React.FC = () => {
           return waitForRegStudentReceipt(hash);
         })
         .then((receipt) => {
-          console.log("Receipt processed:", receipt);
           if (receipt.receipt.status !== "success") {
             throw new Error("Transaction failed");
           }
@@ -227,7 +224,6 @@ const StudentProfile: React.FC = () => {
           });
         })
         .then(() => {
-          console.log("Moving to step 5");
           setRegistrationStep(5); // Only update after the 90-second delay
         })
         .then(() => {
