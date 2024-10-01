@@ -34,7 +34,7 @@ export function LandingPage() {
     if (userAgent.includes("macintosh")) return "macOS";
     if (userAgent.includes("linux")) return "Linux";
     if (/iPhone|iPad|iPod/.test(userAgent)) return "iOS";
-    if (userAgent.includes("android")) return "Android";
+    if (userAgent.includes("AppleWebKit")) return "Android";
     return "Unknown";
   };
 
