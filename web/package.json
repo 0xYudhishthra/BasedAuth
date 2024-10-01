@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@lnx85/zxing-js": "^0.21.3",
     "@tabler/icons-react": "^3.17.0",
     "@thirdweb-dev/react": "^4.9.4",
     "axios": "^1.7.7",

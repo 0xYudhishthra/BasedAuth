@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { BackgroundLines } from "../components/ui/background-lines";
-import { StartButton } from "./StartButton";
 import { useActiveAccount } from "thirdweb/react";
 import {
   Modal,
@@ -13,6 +12,7 @@ import {
 import { IconScan, IconCards, IconTypeface } from "@tabler/icons-react";
 import styles from "./LandingPage.module.css";
 import { useRouter } from "next/navigation";
+import { BrowserMultiFormatReader } from "@lnx85/zxing-js";
 
 declare global {
   interface Window {
@@ -21,36 +21,37 @@ declare global {
 }
 
 // NFC Functionality
-async function readNFC() {
+function readNFC(): string | undefined {
   if ("NDEFReader" in window) {
     try {
       const ndef = new window.NDEFReader();
-      await ndef.scan();
-      console.log("NFC scan started successfully.");
-
-      ndef.onreadingerror = () => {
-        console.error("Error! Cannot read data from NFC tag. Try another one?");
-      };
-
-      ndef.onreading = (event: any) => {
-        const message = event.message;
-        for (const record of message.records) {
-          console.log("Record type:  ", record.recordType);
-          console.log("MIME type:    ", record.mediaType);
-          console.log("Record id:    ", record.id);
-
-          // Assuming the NFC tag contains text data
-          const decoder = new TextDecoder(record.encoding || "utf-8");
-          const data = decoder.decode(record.data);
-          console.log("Decoded NFC Data:", data);
-        }
-      };
+      ndef
+        .scan()
+        .then(() => {
+          console.log("Scan started successfully.");
+          ndef.onreadingerror = () => {
+            console.log("Cannot read data from the NFC tag. Try another one?");
+          };
+          ndef.onreading = (event: any) => {
+            alert(event.serialNumber);
+            if (event.serialNumber) {
+              alert(event.serialNumber);
+              window.location.href = `/dashboard/${event.serialNumber}`;
+            } else {
+              console.error("Failed to read NFC");
+            }
+          };
+        })
+        .catch((error: any) => {
+          console.log(`Error! Scan failed to start: ${error}.`);
+        });
     } catch (error) {
-      console.error("Error! Scan failed to start: ", error);
+      console.log(`Error! Scan failed to start: ${error}.`);
     }
   } else {
     console.warn("NFC not supported by this browser.");
   }
+  return undefined;
 }
 
 export function LandingPage() {
@@ -58,6 +59,8 @@ export function LandingPage() {
   const activeAccount = useActiveAccount();
   const [os, setOS] = useState<string>("Unknown");
   const [hasNFCSupport, setHasNFCSupport] = useState<boolean>(false); // NFC support state
+  const [isScanning, setIsScanning] = useState<boolean>(false); // Control camera scanning
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const detectedOS = getOS();
@@ -84,18 +87,57 @@ export function LandingPage() {
 
   const checkNFCSupport = () => {
     if ("NDEFReader" in window) {
-      // Web NFC API is available
       setHasNFCSupport(true);
     } else {
-      // Web NFC API is not available
       setHasNFCSupport(false);
+    }
+  };
+
+  const handleBarcodeReading = async () => {
+    setIsScanning(true);
+    const codeReader = new BrowserMultiFormatReader();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute("playsinline", "true");
+        videoRef.current.play();
+
+        codeReader.decodeFromVideoDevice(
+          null,
+          videoRef.current,
+          (result, err) => {
+            if (result) {
+              alert(`Scanned Code: ${result.getText()}`);
+              window.location.href = `/dashboard/${result.getText()}`;
+              stopBarcodeReading();
+            }
+            if (err) {
+              console.error(err);
+            }
+          }
+        );
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+    }
+  };
+
+  const stopBarcodeReading = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      setIsScanning(false);
     }
   };
 
   const handleTap = () => {
     if (hasNFCSupport) {
-      console.log("Initiating NFC tap process...");
-      readNFC(); // Call the NFC reading function
+      alert("Tap your APCard");
+      readNFC();
     } else {
       console.warn("NFC not supported on this device.");
       alert("NFC is not supported on your device.");
@@ -103,12 +145,10 @@ export function LandingPage() {
   };
 
   const handleScan = () => {
-    console.log("Initiating scan process...");
-    // Implement scan functionality
+    handleBarcodeReading();
   };
 
   const handleType = () => {
-    console.log("Initiating type process...");
     const cardUID = prompt("Enter your CardUID");
     if (cardUID) {
       router.push(`/dashboard/${cardUID}`);
@@ -122,7 +162,7 @@ export function LandingPage() {
       description:
         "Use your device's camera to scan your APCard for verification.",
       action: handleScan,
-      showOn: ["Android", "iOS"],
+      showOn: ["iOS"],
     },
     {
       icon: <IconCards size={48} color="white" />,
@@ -173,19 +213,35 @@ export function LandingPage() {
       <p className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-neutral-700 dark:text-neutral-400 text-center px-4">
         Linking NFT wallets to APCard with biometrics and social login.
       </p>
-      {activeAccount?.address && (
+      {isScanning && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-xl font-bold text-center mb-4">
+              Scanning for Barcode...
+            </h3>
+            {/* Video stream for barcode scanning */}
+            <video ref={videoRef} className="viewport w-full h-auto" />
+            <button
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md w-full"
+              onClick={stopBarcodeReading}
+            >
+              Stop Scanning
+            </button>
+          </div>
+        </div>
+      )}
+      {!isScanning && activeAccount?.address && (
         <Modal>
-          <ModalTrigger className="relative z-50 bg-black dark:bg-white dark:text-black text-white flex justify-center group/modal-btn mt-5 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base">
+          <ModalTrigger className="bg-black dark:bg-white dark:text-black text-white flex justify-center group/modal-btn mt-5 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base">
             <span className="group-hover/modal-btn:translate-x-40 text-center transition duration-500">
               Access NFT Wallet
             </span>
-            <div className="-translate-x-40 group-hover/modal-btn:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 text-white z-50">
+            <div className="-translate-x-40 group-hover/modal-btn:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 text-white z-20">
               <IconScan size={24} color="black" />
             </div>
           </ModalTrigger>
-
-          <ModalBody className="relative z-50 bg-transparent">
-            <ModalContent className="relative z-50 bg-transparent px-4 w-full max-w-3xl mx-auto">
+          <ModalBody>
+            <ModalContent className="px-4 w-full max-w-3xl mx-auto">
               <h4 className="text-xl sm:text-2xl font-bold text-center mb-4 bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
                 Access Your NFT Wallet
               </h4>
@@ -193,6 +249,16 @@ export function LandingPage() {
                 <span className="font-semibold text-indigo-400">Luca3Auth</span>{" "}
                 adapts to your device:
                 <span className="italic ml-1">Options tailored for {os}</span>
+              </p>
+              <p className="text-xs sm:text-sm text-center text-gray-300 mb-5">
+                Your{" "}
+                <span className="underline decoration-dotted">
+                  APCard&apos;s cardUID
+                </span>{" "}
+                is the key to your
+                <span className="font-bold text-emerald-400 ml-1">
+                  NFT wallet
+                </span>
               </p>
               <div className="flex flex-col items-center space-y-4 mb-4">
                 {renderVerificationCards()}
