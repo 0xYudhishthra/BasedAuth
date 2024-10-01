@@ -1,11 +1,10 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import Card from "./Card";
 import { MediaRenderer, useActiveAccount } from "thirdweb/react";
-import { upload, UploadOptions } from "thirdweb/storage";
+import { upload } from "thirdweb/storage";
 import { client } from "../client";
 import { getStudentData } from "../../hooks/getStudentData";
 import {
@@ -21,7 +20,6 @@ import { MultiStepLoader } from "./ui/multi-step-loader";
 const StudentProfile: React.FC = () => {
   const router = useRouter();
   const account = useActiveAccount();
-  //get the slug from the url
   const slug = usePathname();
   const cardUID = slug?.split("/")[2];
 
@@ -36,8 +34,8 @@ const StudentProfile: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationStep, setRegistrationStep] = useState(0);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<number>(90); // Start from 90 seconds
-  const [isRegisteringENS, setIsRegisteringENS] = useState(false); // New state for ENS registration loading
+  const [countdown, setCountdown] = useState<number>(90);
+  const [isRegisteringENS, setIsRegisteringENS] = useState(false);
   const [registeredENS, setRegisteredENS] = useState(false);
   const [profileRegistered, setProfileRegistered] = useState(false);
 
@@ -73,7 +71,9 @@ const StudentProfile: React.FC = () => {
       return;
     }
 
-    setIsRegisteringENS(true); // Set loading state to true
+    setIsRegisteringENS(true);
+    //disable the claim button
+    document.getElementById("ens-button")?.setAttribute("disabled", "true");
 
     try {
       const studentIdString =
@@ -85,7 +85,10 @@ const StudentProfile: React.FC = () => {
     } catch (error: any) {
       alert("Error registering ENS: " + error?.response?.data?.error);
     } finally {
-      setIsRegisteringENS(false); // Set loading state to false after registration is complete
+      setIsRegisteringENS(false);
+
+      //enable the claim button
+      document.getElementById("ens-button")?.removeAttribute("disabled");
     }
   };
 
@@ -190,14 +193,13 @@ const StudentProfile: React.FC = () => {
       // Step 1: Upload image file to IPFS
       upload({ client, files: [imageFile] })
         .then((uri) => {
-          setRegistrationStep(1); // Only update after upload is successful
-          // Step 2: Register student in smart contract
+          setRegistrationStep(1);
           return registerStudent(
             account,
             cardUID,
             studentId,
             uri?.split("/")[2] + "/" + uri?.split("/")[3]
-          ); // Only update after student registration
+          );
         })
         .then((transactionHash) => {
           setRegistrationStep(2);
@@ -209,21 +211,17 @@ const StudentProfile: React.FC = () => {
           }
           const hash = transactionHash.transactionHash as `0x${string}`;
           setTxHash(hash);
-          // Step 3: Wait for registration receipt
-          setRegistrationStep(3); // Only update after receipt is processed
+          setRegistrationStep(3);
           return waitForRegStudentReceipt(hash);
         })
         .then((receipt) => {
           if (receipt.receipt.status !== "success") {
             throw new Error("Transaction failed");
           }
-          //set a state to reflect this
           setProfileRegistered(true);
-          setRegistrationStep(4); // Only update after the 90-second delay
-
-          // Step 4: Add 90 seconds delay (as per your requirement)
+          setRegistrationStep(4);
           return new Promise<void>((resolve) => {
-            setCountdown(90); // Reset the countdown
+            setCountdown(90);
             const intervalId = setInterval(() => {
               setCountdown((prev) => {
                 if (prev === 1) {
@@ -232,11 +230,11 @@ const StudentProfile: React.FC = () => {
                 }
                 return prev - 1;
               });
-            }, 1000); // Update every second
+            }, 1000);
           });
         })
         .then(() => {
-          setRegistrationStep(5); // Only update after the 90-second delay
+          setRegistrationStep(5);
         })
         .then(() => {
           setRegistrationStep(6);
@@ -244,7 +242,7 @@ const StudentProfile: React.FC = () => {
         })
         .catch((error) => {
           console.error("Error during registration process:", error);
-          setIsRegistering(false); // Stop loader on error
+          setIsRegistering(false);
           alert("Request failed with error: " + error);
         })
         .finally(() => {
@@ -253,7 +251,7 @@ const StudentProfile: React.FC = () => {
     } catch (error) {
       console.error("Error registering student:", error);
       alert("Request failed with error: " + error);
-      setIsRegistering(false); // Stop loader on synchronous error
+      setIsRegistering(false);
     }
   };
 
@@ -270,20 +268,16 @@ const StudentProfile: React.FC = () => {
     },
     { text: "Student NFT Wallet Registered" },
   ];
+
   const renderStudentFound = () => (
-    <div className="flex items-center justify-center max-h-screen -mt-10">
-      <div className="flex flex-row space-x-20 items-center">
-        <CardContainer className="card-container">
-          <CardBody
-            className="bg-gray-900 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-[400px] h-[500px] rounded-xl p-6 border 
-  transform-gpu transition-all duration-300 ease-out 
-  hover:scale-[1.02]
-          origin-center will-change-transform
-          flex flex-col w-justify-center items-center"
-          >
+    <div className="mb-20 flex flex-col items-center justify-center space-y-6 md:space-y-0 md:flex-row md:space-x-12 p-6 w-full md:max-w-6xl mx-auto">
+      <div className="flex flex-col items-center space-y-6 w-full md:w-1/2">
+        {/* Card Container */}
+        <CardContainer className="card-container w-full max-w-xs md:max-w-sm lg:max-w-md">
+          <CardBody className="bg-gray-900 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] rounded-xl p-6 border transition-all duration-300 ease-out hover:scale-[1.02] flex flex-col items-center">
             <CardItem
               translateZ="50"
-              className="w-full h-1/2 rounded-lg overflow-hidden mb-10"
+              className="w-full h-[200px] md:h-[300px] rounded-lg overflow-hidden mb-6"
             >
               <MediaRenderer
                 client={client}
@@ -297,7 +291,7 @@ const StudentProfile: React.FC = () => {
             <CardItem
               as="span"
               translateZ="60"
-              className="text-white text-xl font-semibold block md-30"
+              className="text-white text-lg md:text-xl font-semibold text-center block"
             >
               {ensName ? (
                 <button
@@ -311,6 +305,7 @@ const StudentProfile: React.FC = () => {
                 >{`${ensName}.${ensDomain}`}</button>
               ) : (
                 <button
+                  id="ens-button"
                   onClick={handleENSRegister}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 focus:outline-none"
                 >
@@ -344,7 +339,7 @@ const StudentProfile: React.FC = () => {
             <CardItem
               as="p"
               translateZ="60"
-              className="text-neutral-300 text-xl mt-5"
+              className="text-neutral-300 text-sm md:text-base mt-4"
             >
               Balance: {balance ?? "Loading..."} ETH
             </CardItem>
@@ -353,55 +348,56 @@ const StudentProfile: React.FC = () => {
               as={Link}
               href={txHash ? `https://sepolia.basescan.org/tx/${txHash}` : "#"}
               target="_blank"
-              className="px-4 py-12 rounded-xl text-s font-normal dark:text-white"
+              className="mt-6 text-blue-400 hover:underline text-sm"
             >
               Initial Registration Transaction →
             </CardItem>
           </CardBody>
         </CardContainer>
+      </div>
 
-        <div className="bg-gray-800 rounded-lg p-6 shadow-lg w-max">
-          <h2 className="text-2xl font-bold mb-4 text-white border-b border-gray-600 pb-2">
-            Student Profile
-          </h2>
-          <div className="space-y-3">
-            <ProfileItem
-              label="NFT Wallet Address"
-              value={
-                studentData?.[2] ? (
-                  <a
-                    href={`https://sepolia.basescan.org/address/${studentData[2]}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    {studentData[2]}
-                  </a>
-                ) : (
-                  "Loading..."
-                )
-              }
-            />{" "}
-            <ProfileItem
-              label="Student ID"
-              value={
-                studentData?.[0]
-                  ? studentData[0].toString().length === 5
-                    ? `TP0${studentData[0]}`
-                    : `TP${studentData[0]}`
-                  : ""
-              }
-            />
-            <ProfileItem label="Card UID" value={cardUID} />
-          </div>
+      {/* Profile Information */}
+      <div className="bg-gray-800 rounded-lg p-6 shadow-lg w-full md:w-1/2 lg:max-w-md">
+        <h2 className="text-2xl font-bold text-white border-b border-gray-600 pb-2 mb-4 text-center md:text-left">
+          Student Profile
+        </h2>
+        <div className="space-y-3">
+          <ProfileItem
+            label="NFT Wallet Address"
+            value={
+              studentData?.[2] ? (
+                <a
+                  href={`https://sepolia.basescan.org/address/${studentData[2]}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline"
+                >
+                  {studentData[2]}
+                </a>
+              ) : (
+                "Loading..."
+              )
+            }
+          />
+          <ProfileItem
+            label="Student ID"
+            value={
+              studentData?.[0]
+                ? studentData[0].toString().length === 5
+                  ? `TP0${studentData[0]}`
+                  : `TP${studentData[0]}`
+                : ""
+            }
+          />
+          <ProfileItem label="Card UID" value={cardUID} />
         </div>
       </div>
     </div>
   );
 
   const renderStudentNotFound = () => (
-    <div className="bg-gray-900 p-6 rounded-lg shadow-lg max-w-4xl mx-auto flex mt-4">
-      <div className="flex-1 mr-6">
+    <div className="bg-gray-900 p-6 rounded-lg shadow-lg max-w-4xl mx-auto flex flex-col md:flex-row mt-4 space-y-6 md:space-y-0">
+      <div className="flex-1 md:mr-6">
         <h2 className="text-2xl font-bold mb-4 text-white">
           Explore more with your APCard!
         </h2>
@@ -498,7 +494,7 @@ const StudentProfile: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-4 mb-10">
       {isLoading ? (
         <Card>
           <p>Loading data...</p>
