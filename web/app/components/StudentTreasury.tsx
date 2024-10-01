@@ -74,7 +74,7 @@ const StudentTreasury = () => {
           if (receipt && receipt?.status === "success") {
             setSwapStatus(
               `Swap Successful! You will receive ${
-                swappedUSDCAmount ? swappedUSDCAmount.toFixed(2) : 0
+                swappedUSDCAmount ? swappedUSDCAmount.toFixed(2) : ""
               } USDC.`
             );
           }
@@ -210,6 +210,9 @@ const StudentTreasury = () => {
 
       setSwapStatus("Swapping...");
 
+      //disable the swap button
+      document.getElementById("swap-button")?.setAttribute("disabled", "true");
+
       // Call the swapETHToUSDC hook
       const { transactionHash } = await swapETHToUSDC(
         account,
@@ -218,6 +221,9 @@ const StudentTreasury = () => {
       );
 
       setSwapTransactionHash(transactionHash);
+
+      //enable the swap button
+      document.getElementById("swap-button")?.removeAttribute("disabled");
     } catch (error) {
       console.error(error);
 
@@ -245,6 +251,9 @@ const StudentTreasury = () => {
     try {
       // Set the "Resolving ENS..." message
       setSendStatus("Resolving ENS...");
+
+      //disable the send button
+      document.getElementById("send-button")?.setAttribute("disabled", "true");
 
       // Resolve ENS to address or use the provided address directly
       const address = recipientENS.endsWith(".eth")
@@ -274,6 +283,9 @@ const StudentTreasury = () => {
 
       // Set the transaction hash and status
       setSendUSDCTransactionHash(transactionHash);
+
+      //enable the send button
+      document.getElementById("send-button")?.removeAttribute("disabled");
     } catch (error) {
       console.error(error);
       const errorMessage =
@@ -324,13 +336,14 @@ const StudentTreasury = () => {
             className="w-full p-2 mb-4 rounded bg-neutral-800"
           />
           <p className="text-sm text-gray-400 mb-2" id="usdc-equivalent">
-            USDC Equivalent:
+            USDC Equivalent:{" "}
             {usdcEquivalent > 0
               ? `${usdcEquivalent.toFixed(2)} USDC`
               : "0 USDC"}
           </p>
           {studentData?.[2] && (
             <button
+              id="swap-button"
               onClick={handleSwapEthToUsdc}
               className="relative px-6 py-3 text-lg font-semibold rounded-md overflow-hidden group border-2 border-white mt-4"
             >
@@ -393,6 +406,7 @@ const StudentTreasury = () => {
           />
           {studentData?.[2] && (
             <button
+              id="send-button"
               onClick={handleSend}
               className="relative px-6 py-3 text-lg font-semibold rounded-md overflow-hidden group border-2 border-white mt-4"
             >
@@ -439,7 +453,7 @@ const StudentTreasury = () => {
     },
   ];
 
-  return <HoverEffect items={items} />;
+  return <HoverEffect className="mb-20" items={items} />;
 };
 
 export default StudentTreasury;
