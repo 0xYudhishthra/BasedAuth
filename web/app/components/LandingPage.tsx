@@ -31,9 +31,9 @@ export function LandingPage() {
   const getOS = (): string => {
     const userAgent = navigator.userAgent.toLowerCase();
     if (userAgent.includes("win")) return "Windows";
-    if (userAgent.includes("mac")) return "macOS";
+    if (userAgent.includes("macintosh")) return "macOS";
     if (userAgent.includes("linux")) return "Linux";
-    if (/iphone|ipad|ipod/.test(userAgent)) return "iOS";
+    if (/iPhone|iPad|iPod/.test(userAgent)) return "iOS";
     if (userAgent.includes("android")) return "Android";
     return "Unknown";
   };
