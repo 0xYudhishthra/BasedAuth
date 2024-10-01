@@ -61,8 +61,8 @@ export function Preview({ cardUID }: { cardUID: string }) {
   return (
     <div
       className={cn(
-        "rounded-md flex flex-col md:flex-row bg-neutral-800 w-full flex-1 max-w-[85rem] mx-auto border border-neutral-800 overflow-hidden",
-        "h-[45rem] mb-40 z-30"
+        "rounded-md flex flex-col md:flex-row bg-neutral-800 w-full flex-1 max-w-[95%] md:max-w-[85rem] mx-auto border border-neutral-800 overflow-hidden",
+        "h-[30rem] sm:h-[35rem] md:h-[40rem] lg:h-[45rem] mb-20 md:mb-40 z-30"
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
@@ -108,10 +108,10 @@ export function Preview({ cardUID }: { cardUID: string }) {
 const Logo = () => {
   return (
     <Link
-      href="#"
+      href="/"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <Image src="/Luca3.png" alt="Luca3Auth" width={50} height={50} />
+      <Image src="/Luca3.png" alt="Luca3Auth" width={40} height={40} />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -126,10 +126,10 @@ const Logo = () => {
 const LogoIcon = () => {
   return (
     <Link
-      href="#"
+      href="/"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <Image src="/Luca3.png" alt="ReversiFi" width={50} height={50} />
+      <Image src="/Luca3.png" alt="Luca3Auth" width={40} height={40} />
     </Link>
   );
 };

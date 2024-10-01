@@ -21,13 +21,10 @@ export default function Dashboard({ params }: { params: { cardUID: string } }) {
 
   return (
     <div className="relative w-full h-screen">
-      {" "}
       <div className="absolute inset-0 z-0 -top-28">
-        {" "}
         <FancyBackground />
       </div>
-      <div className="relative z-10 top-40">
-        {" "}
+      <div className="relative z-10 top-40 md:top-28">
         <Preview cardUID={params.cardUID} />
       </div>
     </div>

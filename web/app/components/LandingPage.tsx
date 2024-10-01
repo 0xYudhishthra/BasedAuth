@@ -33,9 +33,7 @@ function readNFC(): string | undefined {
             console.log("Cannot read data from the NFC tag. Try another one?");
           };
           ndef.onreading = (event: any) => {
-            alert(event.serialNumber);
             if (event.serialNumber) {
-              alert(event.serialNumber);
               window.location.href = `/dashboard/${event.serialNumber}`;
             } else {
               console.error("Failed to read NFC");
@@ -111,7 +109,6 @@ export function LandingPage() {
           videoRef.current,
           (result, err) => {
             if (result) {
-              alert(`Scanned Code: ${result.getText()}`);
               window.location.href = `/dashboard/${result.getText()}`;
               stopBarcodeReading();
             }

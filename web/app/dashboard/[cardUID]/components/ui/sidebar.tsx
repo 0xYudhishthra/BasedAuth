@@ -123,7 +123,7 @@ export const MobileSidebar = ({
         <div className="flex justify-end z-20 w-full">
           <IconMenu2
             className="text-neutral-200"
-            onClick={() => setOpen(!open)}
+            onClick={() => setOpen(!open)} // Toggle sidebar open state on menu icon click
           />
         </div>
         <AnimatePresence>
@@ -141,9 +141,10 @@ export const MobileSidebar = ({
                 className
               )}
             >
+              {/* Close button */}
               <div
-                className="absolute right-10 top-10 z-50text-neutral-200"
-                onClick={() => setOpen(!open)}
+                className="absolute right-10 top-10 z-50 text-neutral-200" // Fixed typo for `z-50text-neutral-200`
+                onClick={() => setOpen(false)} // Close sidebar on X icon click
               >
                 <IconX />
               </div>
