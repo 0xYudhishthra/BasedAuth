@@ -139,6 +139,10 @@ const Dashboard = ({
   isAdmin,
 }: IActiveLink & { isAdmin: boolean }) => {
   const renderContent = () => {
+    if (isAdmin) {
+      return <Admin />;
+    }
+
     switch (activeLink) {
       case "Profile":
         return <StudentProfile />;
@@ -146,8 +150,7 @@ const Dashboard = ({
         return <StudentTreasury />;
       case "Certificate":
         return <StudentCertification />;
-      case "Admin":
-        return <Admin />;
+
       default:
         return <StudentProfile />;
     }

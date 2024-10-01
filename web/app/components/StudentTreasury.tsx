@@ -3,12 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import axios from "axios";
 import { HoverEffect } from "./ui/card-hover-effect";
-import { getTBABalance } from "../../hooks/getTBABalance";
-import { getStudentData } from "../../hooks/getStudentData";
+import { getTBABalance } from "@/hooks/getTBABalance";
+import { getStudentData } from "@/hooks/getStudentData";
 import { usePathname } from "next/navigation";
-import { swapETHToUSDC, waitForSwapReceipt } from "../../hooks/swapETHToUSDC";
-import { useUSDCBalance } from "../../hooks/getUSDCBalance";
-import { sendUSDC, waitForSendUSDCReceipt } from "../../hooks/sendUSDC";
+import { swapETHToUSDC, waitForSwapReceipt } from "@/hooks/swapETHToUSDC";
+import { useUSDCBalance } from "@/hooks/getUSDCBalance";
+import { sendUSDC, waitForSendUSDCReceipt } from "@/hooks/sendUSDC";
+import { AxiosError } from "axios";
+import { fetchUSDCSwapped } from "@/hooks/fetchUSDCSwapped";
 
 const StudentTreasury = () => {
   const account = useActiveAccount();
@@ -41,6 +43,9 @@ const StudentTreasury = () => {
   const { data: usdcData, isLoading: isUSDCBalanceLoading } = useUSDCBalance(
     studentData?.[2] ?? ""
   );
+  const [swappedUSDCAmount, setSwappedUSDCAmount] = useState<number | null>(
+    null
+  );
 
   const fetchENSAddress = async (ens: string) => {
     try {
@@ -68,9 +73,9 @@ const StudentTreasury = () => {
           // Check if the receipt has a status, and if it's success
           if (receipt && receipt?.status === "success") {
             setSwapStatus(
-              `Swap Successful! You will receive ${usdcEquivalent.toFixed(
-                2
-              )} USDC.`
+              `Swap Successful! You will receive ${
+                swappedUSDCAmount ? swappedUSDCAmount.toFixed(2) : 0
+              } USDC.`
             );
           }
 
@@ -111,7 +116,7 @@ const StudentTreasury = () => {
   }, [
     swapTransactionHash,
     sendUSDCTransactionHash,
-    usdcEquivalent,
+    swappedUSDCAmount,
     amountToSend,
     recipientENS,
   ]);
@@ -141,31 +146,15 @@ const StudentTreasury = () => {
       getTBABalance(studentData?.[2] ?? "").then(setTbaBalance);
     }
 
-    if (usdcData) {
+    if (
+      usdcData ||
+      swapStatus?.startsWith("Swap Successful!") ||
+      sendStatus?.startsWith("Sent")
+    ) {
       setUsdcBalance(usdcData);
     }
-  }, [studentData]);
+  }, [studentData, swapStatus, sendStatus, usdcData]);
 
-  const fetchEthToUsdRate = async () => {
-    try {
-      const response = await axios.get(
-        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-      );
-      setEthToUsdRate(response.data.ethereum.usd);
-    } catch (error: any) {
-      console.error("Error fetching ETH to USD rate:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      const formattedError = errorMessage.split(" - ")[0];
-      setSwapStatus(`Swap failed with ${formattedError}`);
-    }
-  };
-
-  useEffect(() => {
-    fetchEthToUsdRate();
-  }, []);
-
-  // Calculate the USDC equivalent dynamically when the amountToSwap or ethToUsdRate changes
   useEffect(() => {
     if (amountToSwap && !isNaN(parseFloat(amountToSwap))) {
       const usdcEquivalentAmount = parseFloat(amountToSwap) * ethToUsdRate;
@@ -174,6 +163,41 @@ const StudentTreasury = () => {
       setUsdcEquivalent(0); // Reset if the input is invalid
     }
   }, [amountToSwap, ethToUsdRate]);
+
+  const fetchEthToUsdRate = async () => {
+    try {
+      const response = await axios.get(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+      );
+      setEthToUsdRate(response.data.ethereum.usd);
+    } catch (error: any) {
+      const errorMessage =
+        error instanceof AxiosError ? error.message : String(error);
+
+      if (error.code === "ERR_NETWORK") {
+        console.error("Network error. Temporarily disabling the USDC display.");
+        //disable the usdc display for all elements with the id usdc-equivalent
+        document.querySelectorAll("#usdc-equivalent").forEach((element) => {
+          element.classList.add("hidden");
+        });
+      } else {
+        console.error(`Swap failed with ${errorMessage}`);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchEthToUsdRate();
+  }, []);
+
+  useEffect(() => {
+    if (swapStatus?.startsWith("Swap Successful!")) {
+      //fetch the swapped usdc amount
+      fetchUSDCSwapped(studentData?.[2] as string).then((amount) =>
+        setSwappedUSDCAmount(amount)
+      );
+    }
+  }, [swapStatus]);
 
   const handleSwapEthToUsdc = async () => {
     if (!amountToSwap || isNaN(parseFloat(amountToSwap))) {
@@ -276,7 +300,7 @@ const StudentTreasury = () => {
             <span className="font-semibold">ETH: </span>
             {ethBalanceValue.toFixed(4)} ETH
           </div>
-          <div>
+          <div id="usdc-equivalent">
             <span className="font-semibold">Equivalent in USD: </span>$
             {usdBalance.toFixed(2)}
           </div>
@@ -286,7 +310,7 @@ const StudentTreasury = () => {
           </div>
         </>
       ),
-      link: "ethUSDCBalance",
+      link: "#",
     },
     {
       title: "Swap ETH to USDC",
@@ -299,8 +323,8 @@ const StudentTreasury = () => {
             onChange={(e) => setAmountToSwap(e.target.value)}
             className="w-full p-2 mb-4 rounded bg-neutral-800"
           />
-          <p className="text-sm text-gray-400 mb-2">
-            USDC Equivalent:{" "}
+          <p className="text-sm text-gray-400 mb-2" id="usdc-equivalent">
+            USDC Equivalent:
             {usdcEquivalent > 0
               ? `${usdcEquivalent.toFixed(2)} USDC`
               : "0 USDC"}
@@ -347,7 +371,7 @@ const StudentTreasury = () => {
           )}
         </>
       ),
-      link: "swapETHToUSDC",
+      link: "#",
     },
     {
       title: "Send USDC",
@@ -411,7 +435,7 @@ const StudentTreasury = () => {
           )}
         </>
       ),
-      link: "sendUSDC",
+      link: "#",
     },
   ];
 

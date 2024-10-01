@@ -38,6 +38,8 @@ const StudentProfile: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(90); // Start from 90 seconds
   const [isRegisteringENS, setIsRegisteringENS] = useState(false); // New state for ENS registration loading
+  const [registeredENS, setRegisteredENS] = useState(false);
+  const [profileRegistered, setProfileRegistered] = useState(false);
 
   const fetchName = async (address: string) => {
     try {
@@ -79,10 +81,9 @@ const StudentProfile: React.FC = () => {
           ? `tp0${studentData?.[0]}`
           : `tp${studentData?.[0]}`;
       await claimName(studentData?.[2], studentIdString);
-      alert("ENS registered successfully!");
-      window.location.reload();
-    } catch (error) {
-      alert("Error registering ENS: " + error);
+      setRegisteredENS(true);
+    } catch (error: any) {
+      alert("Error registering ENS: " + error?.response?.data?.error);
     } finally {
       setIsRegisteringENS(false); // Set loading state to false after registration is complete
     }
@@ -101,16 +102,25 @@ const StudentProfile: React.FC = () => {
       setIsLoading(false);
     }
 
+    if (profileRegistered) {
+      setStudentData(data);
+      setIsLoading(false);
+    }
+
     if (!data || Object.keys(data).length === 0 || studentData === undefined) {
       setIsLoading(false);
     }
-  }, [isContractLoading, data]);
+  }, [isContractLoading, data, profileRegistered]);
 
   useEffect(() => {
     if (studentData && studentData?.[2]) {
       fetchName(studentData?.[2]);
     }
-  }, [studentData, ensName, ensDomain]);
+
+    if (registeredENS) {
+      fetchName(studentData?.[2]);
+    }
+  }, [studentData, ensName, ensDomain, registeredENS, data]);
 
   useEffect(() => {
     if (studentData?.[2]) {
@@ -207,6 +217,8 @@ const StudentProfile: React.FC = () => {
           if (receipt.receipt.status !== "success") {
             throw new Error("Transaction failed");
           }
+          //set a state to reflect this
+          setProfileRegistered(true);
           setRegistrationStep(4); // Only update after the 90-second delay
 
           // Step 4: Add 90 seconds delay (as per your requirement)
@@ -228,7 +240,6 @@ const StudentProfile: React.FC = () => {
         })
         .then(() => {
           setRegistrationStep(6);
-          //do a manual refresh of the page
           window.location.reload();
         })
         .catch((error) => {
@@ -354,7 +365,23 @@ const StudentProfile: React.FC = () => {
             Student Profile
           </h2>
           <div className="space-y-3">
-            <ProfileItem label="NFT Wallet Address" value={studentData?.[2]} />
+            <ProfileItem
+              label="NFT Wallet Address"
+              value={
+                studentData?.[2] ? (
+                  <a
+                    href={`https://sepolia.basescan.org/address/${studentData[2]}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    {studentData[2]}
+                  </a>
+                ) : (
+                  "Loading..."
+                )
+              }
+            />{" "}
             <ProfileItem
               label="Student ID"
               value={
@@ -463,7 +490,7 @@ const StudentProfile: React.FC = () => {
     </div>
   );
 
-  const ProfileItem = ({ label, value }: { label: string; value: string }) => (
+  const ProfileItem = ({ label, value }: { label: string; value: any }) => (
     <div>
       <p className="text-gray-400 text-sm">{label}</p>
       <p className="text-white font-medium truncate">{value}</p>
@@ -474,7 +501,7 @@ const StudentProfile: React.FC = () => {
     <div className="space-y-6">
       {isLoading ? (
         <Card>
-          <p>Loading student data...</p>
+          <p>Loading data...</p>
         </Card>
       ) : studentData && Object.keys(studentData).length > 0 ? (
         renderStudentFound()
