@@ -47,9 +47,7 @@ export function Preview({ cardUID }: { cardUID: string }) {
 
   useEffect(() => {
     if (account?.address && admin) {
-      console.log(admin);
       if (admin.includes(account.address)) {
-        console.log("Admin");
         setIsAdmin(true);
       } else {
         setIsAdmin(false);
@@ -61,13 +59,13 @@ export function Preview({ cardUID }: { cardUID: string }) {
   return (
     <div
       className={cn(
-        "rounded-md flex flex-col md:flex-row bg-neutral-800 w-full flex-1 max-w-[95%] md:max-w-[85rem] mx-auto border border-neutral-800 overflow-hidden",
-        "h-[30rem] sm:h-[35rem] md:h-[40rem] lg:h-[45rem] mb-20 md:mb-40 z-30"
+        "flex flex-col md:flex-row bg-neutral-800 w-full min-h-screen overflow-y-auto",
+        "mb-20 md:mb-40 z-30"
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="flex flex-col flex-1  overflow-x-hidden">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {/* Show only the Admin option if isAdmin is true */}
@@ -157,10 +155,8 @@ const Dashboard = ({
   };
 
   return (
-    <div className="flex flex-1">
-      <div className="pl-5 p-10 md:p-5 rounded-tl-2xl border border-neutral-800 dark:border-neutral-700 bg-neutral-900 flex flex-col gap-2 flex-1 w-full">
-        {renderContent()}
-      </div>
+    <div className="flex-1 w-full p-5 h-min overflow-hidden">
+      {renderContent()}
     </div>
   );
 };
