@@ -21,7 +21,7 @@ declare global {
 }
 
 // NFC Functionality
-function readNFC(): string | undefined {
+function readNFC() {
   if ("NDEFReader" in window) {
     try {
       const ndef = new window.NDEFReader();
@@ -33,6 +33,7 @@ function readNFC(): string | undefined {
             console.log("Cannot read data from the NFC tag. Try another one?");
           };
           ndef.onreading = (event: any) => {
+            alert(`CardUID: ${event.serialNumber}`);
             if (event.serialNumber) {
               alert(`CardUID: ${event.serialNumber}`);
               window.location.href = `/dashboard/${event.serialNumber}`;
@@ -50,7 +51,6 @@ function readNFC(): string | undefined {
   } else {
     console.warn("NFC not supported by this browser.");
   }
-  return undefined;
 }
 
 export function LandingPage() {
