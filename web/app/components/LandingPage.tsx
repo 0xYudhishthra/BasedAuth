@@ -33,7 +33,6 @@ function readNFC() {
             console.log("Cannot read data from the NFC tag. Try another one?");
           };
           ndef.onreading = (event: any) => {
-            alert(`CardUID: ${event.serialNumber}`);
             if (event.serialNumber) {
               alert(`CardUID: ${event.serialNumber}`);
               window.location.href = `/dashboard/${event.serialNumber}`;
