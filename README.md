@@ -1,6 +1,6 @@
-# Luca3Auth
+# BasedAuth
 
-Luca3Auth is a blockchain-based system integrating NFT wallets with RFID and barcode-enabled student ID cards, utilizing biometric authentication and zero-knowledge proofs to securely verify transactions.
+BasedAuth is a blockchain-based system integrating NFT wallets with RFID and barcode-enabled student ID cards, utilizing biometric authentication and zero-knowledge proofs to securely verify transactions.
 
 ## Features
 
