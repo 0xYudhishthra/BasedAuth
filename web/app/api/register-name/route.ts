@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       "com.discord": "luca3",
       url: "https://auth.luca3.io/",
       location: "🇺🇲",
-      description: "Luca3Auth is awesome!",
+      description: "BasedAuth is awesome!",
     },
   };
 
