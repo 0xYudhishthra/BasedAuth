@@ -63,9 +63,7 @@
       "contractName": "MockUSDC",
       "contractAddress": "0x5c9Bd57011D394e2dFA8F9B7b669C8c0F263531F",
       "function": null,
-      "arguments": [
-        "0x3d6134D8293BF910EC0204e520C7737C1a72f874"
-      ],
+      "arguments": ["0x3d6134D8293BF910EC0204e520C7737C1a72f874"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -84,9 +82,7 @@
       "contractName": "Luca3Treasury",
       "contractAddress": "0x3d6134D8293BF910EC0204e520C7737C1a72f874",
       "function": "setUSDC(address)",
-      "arguments": [
-        "0x5c9Bd57011D394e2dFA8F9B7b669C8c0F263531F"
-      ],
+      "arguments": ["0x5c9Bd57011D394e2dFA8F9B7b669C8c0F263531F"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -103,11 +99,11 @@
     {
       "hash": "0xe02c8538b8c2eab18dff54179616b2843c97d62ea790309aec0b5ddb2a338c40",
       "transactionType": "CREATE",
-      "contractName": "Luca3Auth",
+      "contractName": "BasedAuth",
       "contractAddress": "0xfca6F037f3Dfa9a10d01a2720ae5bA7E7B044a81",
       "function": null,
       "arguments": [
-        "\"Luca3Auth\"",
+        "\"BasedAuth\"",
         "\"L3A\"",
         "0xEa145d6581a9f178fc218289F5e753F288534Be8",
         "0xA1D126C5C0e0BfB223e8C388FF1Ad1e5da1ee976",
@@ -132,10 +128,8 @@
       "transactionType": "CALL",
       "contractName": "Luca3Treasury",
       "contractAddress": "0x3d6134D8293BF910EC0204e520C7737C1a72f874",
-      "function": "updateLuca3Auth(address)",
-      "arguments": [
-        "0xfca6F037f3Dfa9a10d01a2720ae5bA7E7B044a81"
-      ],
+      "function": "updateBasedAuth(address)",
+      "arguments": ["0xfca6F037f3Dfa9a10d01a2720ae5bA7E7B044a81"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -155,9 +149,7 @@
       "contractName": "Luca3Treasury",
       "contractAddress": "0x3d6134D8293BF910EC0204e520C7737C1a72f874",
       "function": "mintUSDC(uint256)",
-      "arguments": [
-        "1000000000000"
-      ],
+      "arguments": ["1000000000000"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -194,12 +186,10 @@
     {
       "hash": "0x11bc3d361667678757bf5fd3f26da2e27409b0a988eba053e7a61791834341e0",
       "transactionType": "CALL",
-      "contractName": "Luca3Auth",
+      "contractName": "BasedAuth",
       "contractAddress": "0xfca6F037f3Dfa9a10d01a2720ae5bA7E7B044a81",
       "function": "setSponsorWallet(address)",
-      "arguments": [
-        "0xA8A86FDc1f7A2C8846CBDE11F263A8aC5423b656"
-      ],
+      "arguments": ["0xA8A86FDc1f7A2C8846CBDE11F263A8aC5423b656"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -216,14 +206,10 @@
     {
       "hash": "0x607d60774e8696c4210f0560868d66be3b55b3acb373db4361d919b3425eef4a",
       "transactionType": "CALL",
-      "contractName": "Luca3Auth",
+      "contractName": "BasedAuth",
       "contractAddress": "0xfca6F037f3Dfa9a10d01a2720ae5bA7E7B044a81",
       "function": "registerStudentRequest(string,uint256,string)",
-      "arguments": [
-        "\"TEST\"",
-        "61746",
-        "\"TESTTEST\""
-      ],
+      "arguments": ["\"TEST\"", "61746", "\"TESTTEST\""],
       "transaction": {
         "type": "0x02",
         "from": "0x5413c994f7db44a98fea53defab3a16bffe3b7eb",

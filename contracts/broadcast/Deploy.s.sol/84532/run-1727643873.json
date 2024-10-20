@@ -44,9 +44,7 @@
       "contractName": "Luca3Treasury",
       "contractAddress": "0xDFf4e2F81bb94e2092Ca15DBd66167B7AcdF633A",
       "function": null,
-      "arguments": [
-        "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
-      ],
+      "arguments": ["0x036CbD53842c5426634e7929541eC2318f3dCF7e"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -62,11 +60,11 @@
     {
       "hash": "0xc969397383ca5ec3c9417b4548aa95a3c2cd30ed8f0907ccc55900593858a21a",
       "transactionType": "CREATE",
-      "contractName": "Luca3Auth",
+      "contractName": "BasedAuth",
       "contractAddress": "0x32C849d8BB4cA77452839eCF3AE493AA9da9df01",
       "function": null,
       "arguments": [
-        "\"Luca3Auth\"",
+        "\"BasedAuth\"",
         "\"L3A\"",
         "0xa3B35B27bf1fFd4DD281754E98D47E2DBDEc20BF",
         "0x798Cb8eC336DB4A57a00B506Fc3CD3A1E2A81ca8",
@@ -91,10 +89,8 @@
       "transactionType": "CALL",
       "contractName": "Luca3Treasury",
       "contractAddress": "0xDFf4e2F81bb94e2092Ca15DBd66167B7AcdF633A",
-      "function": "updateLuca3Auth(address)",
-      "arguments": [
-        "0x32C849d8BB4cA77452839eCF3AE493AA9da9df01"
-      ],
+      "function": "updateBasedAuth(address)",
+      "arguments": ["0x32C849d8BB4cA77452839eCF3AE493AA9da9df01"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -131,12 +127,10 @@
     {
       "hash": "0x0836e4363b76e5db0602ce4a08db90b11ffb76fb144ba71666d52540e4182ea1",
       "transactionType": "CALL",
-      "contractName": "Luca3Auth",
+      "contractName": "BasedAuth",
       "contractAddress": "0x32C849d8BB4cA77452839eCF3AE493AA9da9df01",
       "function": "setSponsorWallet(address)",
-      "arguments": [
-        "0xc2EB02Dca997577931DE9aF1Df6c408e771cEF86"
-      ],
+      "arguments": ["0xc2EB02Dca997577931DE9aF1Df6c408e771cEF86"],
       "transaction": {
         "type": "0x02",
         "from": "0x598ca9ca53d5bb84fd56fe41c3f40ed15d731e18",
@@ -153,14 +147,10 @@
     {
       "hash": "0xc3dd1586ac3f5b3264306db87e93789d01282a922cdafd81285874bb9a448bf5",
       "transactionType": "CALL",
-      "contractName": "Luca3Auth",
+      "contractName": "BasedAuth",
       "contractAddress": "0x32C849d8BB4cA77452839eCF3AE493AA9da9df01",
       "function": "registerStudentRequest(string,uint256,string)",
-      "arguments": [
-        "\"TEST\"",
-        "61746",
-        "\"TESTTEST\""
-      ],
+      "arguments": ["\"TEST\"", "61746", "\"TESTTEST\""],
       "transaction": {
         "type": "0x02",
         "from": "0x5413c994f7db44a98fea53defab3a16bffe3b7eb",
