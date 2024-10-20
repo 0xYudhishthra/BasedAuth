@@ -2,31 +2,31 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/Luca3Auth.sol";
+import "../src/BasedAuth.sol";
 import "../src/ERC6551Registry.sol";
 import "../src/ERC6551Account.sol";
-import "../src/Luca3Treasury.sol";
+import "../src/BasedTreasury.sol";
 import "../src/MockUSDC.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "forge-std/console.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
-contract Luca3AuthTest is Test {
+contract BasedAuthTest is Test {
     using Strings for address;
 
-    string public name = "Luca3Auth";
+    string public name = "BasedAuth";
     string public symbol = "L3A";
     ERC6551Registry public registry;
     ERC6551Account public implementation;
     address public admin;
     address public tester;
     address public airnodeRrp;
-    Luca3Auth public luca3Auth;
+    BasedAuth public basedAuth;
     IERC20 public usdcToken;
-    Luca3Treasury public luca3Treasury;
+    BasedTreasury public basedTreasury;
 
-    //Events from Luca3Auth
+    //Events from BasedAuth
     event StudentRegistered(
         uint256 studentId,
         string metadata,
@@ -130,31 +130,31 @@ contract Luca3AuthTest is Test {
 
         console.log("Deployed ERC6551Registry @", address(registry));
 
-        // Deploy Luca3Treasury
-        luca3Treasury = new Luca3Treasury();
-        console.log("Deployed Luca3Treasury @", address(luca3Treasury));
+        // Deploy BasedTreasury
+        basedTreasury = new BasedTreasury();
+        console.log("Deployed BasedTreasury @", address(basedTreasury));
 
         // Deploy MockUSDC
-        MockUSDC mockUSDC = new MockUSDC(address(luca3Treasury));
+        MockUSDC mockUSDC = new MockUSDC(address(basedTreasury));
         console.log("Deployed MockUSDC @", address(mockUSDC));
 
         // Set the USDC token contract address
-        luca3Treasury.setUSDC(address(mockUSDC));
+        basedTreasury.setUSDC(address(mockUSDC));
 
-        luca3Auth = new Luca3Auth(
+        basedAuth = new BasedAuth(
             name,
             symbol,
             address(registry),
             address(implementation),
-            address(luca3Treasury),
+            address(basedTreasury),
             admin,
             airnodeRrp
         );
 
-        console.log("Deployed Luca3Auth @", address(luca3Auth));
+        console.log("Deployed BasedAuth @", address(basedAuth));
 
         // Set the sponsor wallet
-        luca3Treasury.updateLuca3Auth(address(luca3Auth));
+        basedTreasury.updateBasedAuth(address(basedAuth));
 
         string[] memory inputs = new string[](9);
         inputs[0] = "npx";
@@ -167,7 +167,7 @@ contract Luca3AuthTest is Test {
         inputs[5] = "--airnode-address";
         inputs[6] = "0x6238772544f029ecaBfDED4300f13A3c4FE84E1D";
         inputs[7] = "--sponsor-address";
-        inputs[8] = address(luca3Auth).toHexString();
+        inputs[8] = address(basedAuth).toHexString();
 
         bytes memory result = vm.ffi(inputs);
 
@@ -204,34 +204,34 @@ contract Luca3AuthTest is Test {
         console.log("Balance of", recipient, "is", recipient.balance);
 
         //Set the sponsor wallet
-        luca3Auth.setSponsorWallet(recipient);
+        basedAuth.setSponsorWallet(recipient);
 
         vm.stopPrank();
     }
 
     function testConstructor() public view {
-        assertEq(luca3Auth.name(), "Luca3Auth");
-        assertEq(luca3Auth.symbol(), "L3A");
-        assertEq(luca3Auth.erc6551RegistryAddress_(), address(registry));
+        assertEq(basedAuth.name(), "BasedAuth");
+        assertEq(basedAuth.symbol(), "L3A");
+        assertEq(basedAuth.erc6551RegistryAddress_(), address(registry));
         assertEq(
-            luca3Auth.erc6551ImplementationAddress_(),
+            basedAuth.erc6551ImplementationAddress_(),
             address(implementation)
         );
-        assertEq(luca3Auth.admin_(), admin);
+        assertEq(basedAuth.admin_(), admin);
     }
 
     function testSetSponsorWallet() public {
         address newSponsorWallet = address(0xdead);
         vm.prank(admin);
-        luca3Auth.setSponsorWallet(newSponsorWallet);
-        assertEq(luca3Auth.sponsorWallet(), newSponsorWallet);
+        basedAuth.setSponsorWallet(newSponsorWallet);
+        assertEq(basedAuth.sponsorWallet(), newSponsorWallet);
         vm.stopPrank();
     }
 
     function testSetSponsorWalletNonAdmin() public {
         address newSponsorWallet = address(0xdead);
-        vm.expectRevert(Luca3Auth.NotAdmin.selector);
-        luca3Auth.setSponsorWallet(newSponsorWallet);
+        vm.expectRevert(BasedAuth.NotAdmin.selector);
+        basedAuth.setSponsorWallet(newSponsorWallet);
     }
 
     function testRegisterStudent() public {
@@ -244,7 +244,7 @@ contract Luca3AuthTest is Test {
 
         vm.prank(passkeyAddressGen);
 
-        luca3Auth.registerStudentRequest(cardUID, studentId, metadata);
+        basedAuth.registerStudentRequest(cardUID, studentId, metadata);
 
         (
             uint256 registeredStudentId,
@@ -252,7 +252,7 @@ contract Luca3AuthTest is Test {
             ,
             bool isRegistered,
             address passkeyAddress
-        ) = luca3Auth.students_(cardUID);
+        ) = basedAuth.students_(cardUID);
         assertEq(registeredStudentId, studentId);
         assertEq(registeredMetadata, metadata);
         assertFalse(isRegistered); // Not yet registered until fulfillment
@@ -267,7 +267,7 @@ contract Luca3AuthTest is Test {
 
         vm.prank(passkeyAddressGen);
 
-        bytes32 requestId = luca3Auth.registerStudentRequest(
+        bytes32 requestId = basedAuth.registerStudentRequest(
             cardUID,
             studentId,
             metadata
@@ -278,7 +278,7 @@ contract Luca3AuthTest is Test {
         uint256 qrngUint256 = 12345;
         vm.prank(airnodeRrp);
 
-        luca3Auth.fulfillStudentRegistration(
+        basedAuth.fulfillStudentRegistration(
             requestId,
             abi.encode(qrngUint256)
         );
@@ -288,7 +288,7 @@ contract Luca3AuthTest is Test {
             address tbaAddress,
             bool isRegistered,
             address passkeyAddress
-        ) = luca3Auth.students_(cardUID);
+        ) = basedAuth.students_(cardUID);
 
         vm.stopPrank();
 
@@ -297,7 +297,7 @@ contract Luca3AuthTest is Test {
         assertTrue(isRegistered);
         assertTrue(tbaAddress != address(0));
         assertEq(passkeyAddress, passkeyAddressGen);
-        assertEq(luca3Auth.balanceOf(passkeyAddressGen), 1);
+        assertEq(basedAuth.balanceOf(passkeyAddressGen), 1);
     }
 
     function testCreateCertification() public {
@@ -311,14 +311,14 @@ contract Luca3AuthTest is Test {
 
         vm.prank(admin);
 
-        uint256 certificationId = luca3Auth.createCertification(
+        uint256 certificationId = basedAuth.createCertification(
             metadata,
             eligibleAddresses
         );
 
         vm.stopPrank();
 
-        (string memory storedMetadata, bool isRegistered) = luca3Auth
+        (string memory storedMetadata, bool isRegistered) = basedAuth
             .certifications_(certificationId);
         assertEq(storedMetadata, metadata);
         assertTrue(isRegistered);
@@ -335,7 +335,7 @@ contract Luca3AuthTest is Test {
 
         vm.prank(makeAddr("0x1111"));
 
-        bytes32 requestId = luca3Auth.registerStudentRequest(
+        bytes32 requestId = basedAuth.registerStudentRequest(
             cardUID,
             studentId,
             studentMetadata
@@ -345,12 +345,12 @@ contract Luca3AuthTest is Test {
         vm.stopPrank();
 
         vm.prank(address(airnodeRrp));
-        luca3Auth.fulfillStudentRegistration(
+        basedAuth.fulfillStudentRegistration(
             requestId,
             abi.encode(qrngUint256)
         );
 
-        (, , address tbaAddress, , ) = luca3Auth.students_(cardUID);
+        (, , address tbaAddress, , ) = basedAuth.students_(cardUID);
 
         vm.stopPrank();
 
@@ -359,26 +359,26 @@ contract Luca3AuthTest is Test {
         string memory metadata = "ipfs://QmCertExample";
         address[] memory eligibleAddresses = new address[](1);
         eligibleAddresses[0] = tbaAddress;
-        uint256 certificationId = luca3Auth.createCertification(
+        uint256 certificationId = basedAuth.createCertification(
             metadata,
             eligibleAddresses
         );
 
         // Now test isCertificationClaimed
         assertFalse(
-            luca3Auth.isCertificationClaimed(certificationId, tbaAddress)
+            basedAuth.isCertificationClaimed(certificationId, tbaAddress)
         );
 
         // Mark as claimed
         vm.prank(tbaAddress);
-        luca3Auth.markCertificationClaimed(
+        basedAuth.markCertificationClaimed(
             certificationId,
             cardUID,
             tbaAddress
         );
 
         assertTrue(
-            luca3Auth.isCertificationClaimed(certificationId, tbaAddress)
+            basedAuth.isCertificationClaimed(certificationId, tbaAddress)
         );
     }
 
@@ -390,7 +390,7 @@ contract Luca3AuthTest is Test {
 
         vm.prank(admin);
 
-        uint256 certificationId = luca3Auth.createCertification(
+        uint256 certificationId = basedAuth.createCertification(
             metadata,
             eligibleAddresses
         );
@@ -403,7 +403,7 @@ contract Luca3AuthTest is Test {
 
         vm.prank(makeAddr("0x1111"));
 
-        bytes32 requestId = luca3Auth.registerStudentRequest(
+        bytes32 requestId = basedAuth.registerStudentRequest(
             cardUID,
             studentId,
             studentMetadata
@@ -413,19 +413,19 @@ contract Luca3AuthTest is Test {
         vm.stopPrank();
 
         vm.prank(address(airnodeRrp));
-        luca3Auth.fulfillStudentRegistration(
+        basedAuth.fulfillStudentRegistration(
             requestId,
             abi.encode(qrngUint256)
         );
 
-        (, , address tbaAddress, , ) = luca3Auth.students_(cardUID);
+        (, , address tbaAddress, , ) = basedAuth.students_(cardUID);
 
         // Update eligible addresses to include the student's TBA
         eligibleAddresses[0] = tbaAddress;
         vm.prank(admin);
         string memory metadata2 = "ipfs://QmCertExample2";
 
-        uint256 certId2 = luca3Auth.createCertification(
+        uint256 certId2 = basedAuth.createCertification(
             metadata2,
             eligibleAddresses
         );
@@ -433,9 +433,9 @@ contract Luca3AuthTest is Test {
         vm.stopPrank();
 
         vm.prank(tbaAddress);
-        luca3Auth.markCertificationClaimed(certId2, cardUID, tbaAddress);
+        basedAuth.markCertificationClaimed(certId2, cardUID, tbaAddress);
 
-        assertTrue(luca3Auth.isCertificationClaimed(certId2, tbaAddress));
+        assertTrue(basedAuth.isCertificationClaimed(certId2, tbaAddress));
     }
 
     function testTokenURI() public {
@@ -446,33 +446,33 @@ contract Luca3AuthTest is Test {
 
         vm.prank(passkeyAddress);
 
-        bytes32 requestId = luca3Auth.registerStudentRequest(
+        bytes32 requestId = basedAuth.registerStudentRequest(
             cardUID,
             studentId,
             metadata
         );
         uint256 qrngUint256 = 12345;
         vm.prank(address(airnodeRrp));
-        luca3Auth.fulfillStudentRegistration(
+        basedAuth.fulfillStudentRegistration(
             requestId,
             abi.encode(qrngUint256)
         );
 
-        assertEq(luca3Auth.tokenURI(cardUID), metadata);
+        assertEq(basedAuth.tokenURI(cardUID), metadata);
         vm.stopPrank();
     }
 
     function testUpdateERC6551RegistryAddress() public {
         address newRegistryAddress = address(0x5678);
-        luca3Auth.updateERC6551RegistryAddress(newRegistryAddress);
-        assertEq(luca3Auth.erc6551RegistryAddress_(), newRegistryAddress);
+        basedAuth.updateERC6551RegistryAddress(newRegistryAddress);
+        assertEq(basedAuth.erc6551RegistryAddress_(), newRegistryAddress);
     }
 
     function testUpdateERC6551ImplementationAddress() public {
         address newImplementationAddress = address(0x9ABC);
-        luca3Auth.updateERC6551ImplementationAddress(newImplementationAddress);
+        basedAuth.updateERC6551ImplementationAddress(newImplementationAddress);
         assertEq(
-            luca3Auth.erc6551ImplementationAddress_(),
+            basedAuth.erc6551ImplementationAddress_(),
             newImplementationAddress
         );
     }
@@ -485,7 +485,7 @@ contract Luca3AuthTest is Test {
 
         vm.prank(passkeyAddress);
 
-        bytes32 requestId = luca3Auth.registerStudentRequest(
+        bytes32 requestId = basedAuth.registerStudentRequest(
             cardUID,
             studentId,
             metadata
@@ -493,21 +493,21 @@ contract Luca3AuthTest is Test {
         vm.stopPrank();
         uint256 qrngUint256 = 12345;
         vm.prank(address(airnodeRrp));
-        luca3Auth.fulfillStudentRegistration(
+        basedAuth.fulfillStudentRegistration(
             requestId,
             abi.encode(qrngUint256)
         );
 
-        (, , address tbaAddress, , ) = luca3Auth.students_(cardUID);
+        (, , address tbaAddress, , ) = basedAuth.students_(cardUID);
 
-        assertTrue(luca3Auth.isTBA(cardUID, tbaAddress));
-        assertFalse(luca3Auth.isTBA(cardUID, address(0x1111)));
+        assertTrue(basedAuth.isTBA(cardUID, tbaAddress));
+        assertFalse(basedAuth.isTBA(cardUID, address(0x1111)));
         vm.stopPrank();
     }
 
-    function testUpdateLuca3Auth() public {
-        address newLuca3AuthAddress = address(0x123);
-        luca3Treasury.updateLuca3Auth(newLuca3AuthAddress);
-        assertEq(address(luca3Treasury.luca3Auth()), newLuca3AuthAddress);
+    function testUpdateBasedAuth() public {
+        address newBasedAuthAddress = address(0x123);
+        basedTreasury.updateBasedAuth(newBasedAuthAddress);
+        assertEq(address(basedTreasury.basedAuth()), newBasedAuthAddress);
     }
 }

@@ -7,11 +7,11 @@ import "./interfaces/IERC6551Registry.sol";
 import "./RrpRequesterV0.sol";
 import "./ERC6551Account.sol";
 
-/// @title Luca3Auth
+/// @title BasedAuth
 /// @author Yudhishthra Sugumaran @ Luca3
 /// @notice This contract manages student registrations and certifications using ERC721 tokens and ERC6551 token-bound accounts
 /// @dev Inherits from ERC721 and RrpRequesterV0 for NFT functionality and Airnode integration
-contract Luca3Auth is ERC721, RrpRequesterV0 {
+contract BasedAuth is ERC721, RrpRequesterV0 {
     using Strings for uint256;
 
     /// @notice Struct to store student information
@@ -38,8 +38,8 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
 
     /// @notice Address of the admin
     address public admin_;
-    /// @notice Address of the Luca3Treasury contract
-    address public luca3Treasury_;
+    /// @notice Address of the BasedTreasury contract
+    address public basedTreasury_;
 
     /// @notice Mapping of card UIDs to student information
     mapping(string => Student) public students_;
@@ -113,6 +113,7 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
     /// @param _symbol Symbol of the ERC721 token
     /// @param _erc6551RegistryAddress Address of the ERC6551 registry contract
     /// @param _erc6551ImplementationAddress Address of the ERC6551 implementation contract
+    /// @param _basedTreasury Address of the BasedTreasury contract
     /// @param _admin Address of the admin
     /// @param _airnodeRrp Address of the Airnode RRP contract
     constructor(
@@ -120,13 +121,13 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
         string memory _symbol,
         address _erc6551RegistryAddress,
         address _erc6551ImplementationAddress,
-        address _luca3Treasury,
+        address _basedTreasury,
         address _admin,
         address _airnodeRrp
     ) ERC721(_name, _symbol) RrpRequesterV0(_airnodeRrp) {
         erc6551RegistryAddress_ = _erc6551RegistryAddress;
         erc6551ImplementationAddress_ = _erc6551ImplementationAddress;
-        luca3Treasury_ = _luca3Treasury;
+        basedTreasury_ = _basedTreasury;
         admin_ = _admin;
     }
 
@@ -215,7 +216,7 @@ contract Luca3Auth is ERC721, RrpRequesterV0 {
         ERC6551Account account = ERC6551Account(payable(tbaAddress));
         account.setAccountParameters(
             address(this),
-            address(luca3Treasury_),
+            address(basedTreasury_),
             cardUID
         );
 

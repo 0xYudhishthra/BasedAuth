@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "../src/Luca3Auth.sol";
+import "../src/BasedAuth.sol";
 import "../src/ERC6551Registry.sol";
 import "../src/ERC6551Account.sol";
-import "../src/Luca3Treasury.sol";
+import "../src/BasedTreasury.sol";
 import "../src/MockUSDC.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -92,40 +92,40 @@ contract Deploy is Script {
         ERC6551Registry registry = new ERC6551Registry();
         console.log("Deployed ERC6551Registry @", address(registry));
 
-        // Set up Luca3Auth parameters
-        string memory name = "Luca3Auth";
+        // Set up BasedAuth parameters
+        string memory name = "BasedAuth";
 
         string memory symbol = "L3A";
         address airnodeRrp = 0xa0AD79D995DdeeB18a14eAef56A549A04e3Aa1Bd;
 
-        // Deploy Luca3Treasury
-        Luca3Treasury luca3Treasury = new Luca3Treasury();
-        console.log("Deployed Luca3Treasury @", address(luca3Treasury));
+        // Deploy BasedTreasury
+        BasedTreasury basedTreasury = new BasedTreasury();
+        console.log("Deployed BasedTreasury @", address(basedTreasury));
 
         // Deploy MockUSDC
-        MockUSDC mockUSDC = new MockUSDC(address(luca3Treasury));
+        MockUSDC mockUSDC = new MockUSDC(address(basedTreasury));
         console.log("Deployed MockUSDC @", address(mockUSDC));
 
         // Set the USDC token contract address
-        luca3Treasury.setUSDC(address(mockUSDC));
+        basedTreasury.setUSDC(address(mockUSDC));
 
-        // Deploy Luca3Auth
-        Luca3Auth luca3Auth = new Luca3Auth(
+        // Deploy BasedAuth
+        BasedAuth basedAuth = new BasedAuth(
             name,
             symbol,
             address(registry),
             address(implementation),
-            address(luca3Treasury),
+            address(basedTreasury),
             deployer,
             airnodeRrp
         );
-        console.log("Deployed Luca3Auth @", address(luca3Auth));
+        console.log("Deployed BasedAuth @", address(basedAuth));
 
         // Set the sponsor wallet
-        luca3Treasury.updateLuca3Auth(address(luca3Auth));
+        basedTreasury.updateBasedAuth(address(basedAuth));
 
         // Mint 1_000_000 USDC to the treasury, 6 decimals
-        luca3Treasury.mintUSDC(1000000 * 10 ** 6);
+        basedTreasury.mintUSDC(1000000 * 10 ** 6);
 
         string[] memory inputs = new string[](9);
         inputs[0] = "npx";
@@ -138,7 +138,7 @@ contract Deploy is Script {
         inputs[5] = "--airnode-address";
         inputs[6] = "0x6238772544f029ecaBfDED4300f13A3c4FE84E1D";
         inputs[7] = "--sponsor-address";
-        inputs[8] = address(luca3Auth).toHexString();
+        inputs[8] = address(basedAuth).toHexString();
 
         bytes memory result = vm.ffi(inputs);
 
@@ -173,14 +173,14 @@ contract Deploy is Script {
         console.log("Balance of", recipient, "is", recipient.balance);
 
         //Set the sponsor wallet
-        luca3Auth.setSponsorWallet(recipient);
+        basedAuth.setSponsorWallet(recipient);
 
         vm.stopBroadcast();
 
         vm.startBroadcast(testerPrivateKey);
 
         //Create a transaction to create student request
-        luca3Auth.registerStudentRequest("TEST", 0xF132, "TESTTEST");
+        basedAuth.registerStudentRequest("TEST", 0xF132, "TESTTEST");
 
         vm.stopBroadcast();
     }

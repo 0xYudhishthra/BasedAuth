@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Luca3Auth.sol";
-import "./Luca3Treasury.sol";
+import "./BasedAuth.sol";
+import "./BasedTreasury.sol";
 
 interface IERC6551Account {
     receive() external payable;
@@ -42,11 +42,11 @@ contract ERC6551Account is
     IERC6551Executable
 {
     /// @notice Event emitted when the account parameters are set
-    /// @param _luca3AuthAddress The address of the Luca3Auth contract
+    /// @param _BasedAuthAddress The address of the BasedAuth contract
     /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
     /// @param _cardUID The Card UID of the account
     event AccountParametersSet(
-        address _luca3AuthAddress,
+        address _BasedAuthAddress,
         address _luca3TreasuryAddress,
         string _cardUID
     );
@@ -60,7 +60,7 @@ contract ERC6551Account is
         bytes data,
         uint8 operation
     );
-    error Luca3AuthAddressNotSet(address luca3AuthAddress);
+    error BasedAuthAddressNotSet(address BasedAuthAddress);
     error AmountMustBeGreaterThanZero(uint256 amount);
     error InsufficientETHBalance(uint256 balance, uint256 amount);
 
@@ -68,8 +68,8 @@ contract ERC6551Account is
     /// @dev This value is incremented each time the account's state changes
     uint256 public state;
 
-    /// @notice The address of the Luca3Auth contract
-    address public luca3AuthAddress_;
+    /// @notice The address of the BasedAuth contract
+    address public BasedAuthAddress_;
 
     /// @notice The Card UID of the account
     string public cardUID_;
@@ -195,12 +195,12 @@ contract ERC6551Account is
     function claimCertification(uint256 certificationId) external {
         if (!_isValidSigner(msg.sender))
             revert InvalidSigner(msg.sender, owner());
-        if (luca3AuthAddress_ == address(0))
-            revert Luca3AuthAddressNotSet(luca3AuthAddress_);
+        if (BasedAuthAddress_ == address(0))
+            revert BasedAuthAddressNotSet(BasedAuthAddress_);
 
         // Mark the certification as claimed
-        Luca3Auth luca3Auth = Luca3Auth(luca3AuthAddress_);
-        luca3Auth.markCertificationClaimed(
+        BasedAuth basedAuth = BasedAuth(BasedAuthAddress_);
+        basedAuth.markCertificationClaimed(
             certificationId,
             cardUID_,
             address(this)
@@ -219,10 +219,10 @@ contract ERC6551Account is
         if (!_isValidSigner(msg.sender))
             revert InvalidSigner(msg.sender, owner());
 
-        Luca3Treasury luca3Treasury = Luca3Treasury(
+        BasedTreasury basedTreasury = BasedTreasury(
             payable(luca3TreasuryAddress_)
         );
-        luca3Treasury.swapEthForUsdc{value: amount}(cardUID_);
+        basedTreasury.swapEthForUsdc{value: amount}(cardUID_);
 
         // Increment the state
         ++state;
@@ -248,19 +248,19 @@ contract ERC6551Account is
     }
 
     /// @notice Sets the account parameters
-    /// @param _luca3AuthAddress The address of the Luca3Auth contract
+    /// @param _BasedAuthAddress The address of the BasedAuth contract
     /// @param _luca3TreasuryAddress The address of the Luca3Treasury contract
     /// @param _cardUID The Card UID of the account
     function setAccountParameters(
-        address _luca3AuthAddress,
+        address _BasedAuthAddress,
         address _luca3TreasuryAddress,
         string memory _cardUID
     ) external {
-        luca3AuthAddress_ = _luca3AuthAddress;
+        BasedAuthAddress_ = _BasedAuthAddress;
         luca3TreasuryAddress_ = _luca3TreasuryAddress;
         cardUID_ = _cardUID;
         emit AccountParametersSet(
-            _luca3AuthAddress,
+            _BasedAuthAddress,
             _luca3TreasuryAddress,
             _cardUID
         );
