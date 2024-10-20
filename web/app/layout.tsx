@@ -18,9 +18,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Luca3Auth",
+  title: "BasedAuth",
   description:
-    "Luca3Auth is the easiest way to perform any blockchain transactions with a student ID",
+    "BasedAuth is the BASED way to perform any blockchain transactions with an NFC Card",
   icons: [
     {
       rel: "icon",
