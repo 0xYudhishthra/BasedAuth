@@ -1,9 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import axios from "axios";
 import Card from "./Card";
-import { MediaRenderer, useActiveAccount } from "thirdweb/react";
+import {
+  MediaRenderer,
+  useActiveAccount,
+  useActiveWallet,
+  useWalletBalance,
+} from "thirdweb/react";
+import { baseSepolia, base } from "thirdweb/chains";
+import { useSwitchActiveWalletChain } from "thirdweb/react";
 import { upload } from "thirdweb/storage";
 import { client } from "../client";
 import { getStudentData } from "../../hooks/getStudentData";
@@ -14,14 +20,38 @@ import {
 import { CardContainer, CardBody, CardItem } from "./ui/3d-card";
 import { getTBABalance } from "../../hooks/getTBABalance";
 import { getTBACreationTx } from "../../hooks/getTBACreationTx";
+import {
+  registerBasename,
+  waitForRegisterBasenameReceipt,
+} from "../../hooks/registerBasename";
 import Link from "next/link";
 import { MultiStepLoader } from "./ui/multi-step-loader";
+import {
+  Address,
+  keccak256,
+  encodePacked,
+  namehash,
+  createPublicClient,
+  http,
+} from "viem";
+import { baseSepolia as baseSepoliaViem } from "viem/chains";
+import {
+  resolveL2Name,
+  resolveAddress,
+  BASENAME_RESOLVER_ADDRESS,
+} from "thirdweb/extensions/ens";
 
 const StudentProfile: React.FC = () => {
   const router = useRouter();
   const account = useActiveAccount();
+  const wallet = useActiveWallet();
   const slug = usePathname();
   const cardUID = slug?.split("/")[2];
+  const { data: walletBalance } = useWalletBalance({
+    client,
+    address: account?.address,
+    chain: baseSepolia,
+  });
 
   const [studentData, setStudentData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +60,7 @@ const StudentProfile: React.FC = () => {
   const [ensDomain, setEnsDomain] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [balance, setBalance] = useState<string | number | null>(null);
+  const [txBundleId, setTxBundleId] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationStep, setRegistrationStep] = useState(0);
@@ -38,32 +69,50 @@ const StudentProfile: React.FC = () => {
   const [isRegisteringENS, setIsRegisteringENS] = useState(false);
   const [registeredENS, setRegisteredENS] = useState(false);
   const [profileRegistered, setProfileRegistered] = useState(false);
+  const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
+  const switchChain = useSwitchActiveWalletChain();
 
-  const fetchName = async (address: string) => {
-    try {
-      const response = await axios.get(`/api/get-name?address=${address}`);
+  type Basename = `${string}.basetest.eth`;
 
-      if (response.data && response.data.length > 0 && response.data[0].name) {
-        setEnsName(response.data[0].name);
-        setEnsDomain(response.data[0].domain);
-      }
-    } catch (error) {
-      console.error("Error fetching names:", error);
+  const calculateRequiredBalance = (baseName: string) => {
+    const nameLength = baseName.length;
+    let fee = "0";
+    if (nameLength == 3) {
+      fee = "0.1";
+    } else if (nameLength == 4) {
+      fee = "0.01";
+    } else if (nameLength >= 5 && nameLength <= 9) {
+      fee = "0.001";
+    } else if (nameLength >= 10) {
+      fee = "0.0001";
     }
+    return fee;
   };
 
-  const claimName = async (nftWalletAddress: string, name: string) => {
-    try {
-      const response = await axios.post("/api/register-name", {
-        name,
-        userWalletAddress: nftWalletAddress,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error claiming name:", error);
-      throw error;
-    }
+  const convertChainIdToCoinType = (chainId: number): string => {
+    const cointype = (0x80000000 | chainId) >>> 0;
+    return cointype.toString(16).toLocaleUpperCase();
   };
+
+  async function fetchName(address: Address) {
+    const name = await resolveL2Name({
+      client,
+      address: address,
+      resolverAddress: BASENAME_RESOLVER_ADDRESS,
+      resolverChain: base,
+    });
+    setEnsName(name?.split(".")[0] ?? "");
+    setEnsDomain(name?.split(".")[1] + "." + name?.split(".")[2]);
+    console.log("name", name);
+
+    const resolvedAddress = await resolveAddress({
+      client,
+      name: ensName + "." + ensDomain,
+      resolverAddress: BASENAME_RESOLVER_ADDRESS,
+      resolverChain: base,
+    });
+    setResolvedAddress(resolvedAddress);
+  }
 
   const handleENSRegister = async () => {
     if (!studentData?.[2] || !studentData?.[0]) {
@@ -78,12 +127,74 @@ const StudentProfile: React.FC = () => {
     try {
       const studentIdString =
         studentData?.[0].toString().length === 5
-          ? `tp0${studentData?.[0]}`
-          : `tp${studentData?.[0]}`;
-      await claimName(studentData?.[2], studentIdString);
-      setRegisteredENS(true);
+          ? `0${studentData?.[0]}`
+          : `${studentData?.[0]}`;
+
+      const defaultBaseName = `${studentIdString}.base.eth`;
+
+      // Prompt user for custom basename with default value
+      const customBaseName = prompt(
+        "Enter custom basename (or leave as is for default):",
+        defaultBaseName
+      );
+
+      if (customBaseName === null) {
+        // User canceled the prompt
+        setIsRegisteringENS(false);
+        return;
+      }
+
+      if (customBaseName.trim() === "") {
+        // User entered an empty string
+        setIsRegisteringENS(false);
+        return;
+      }
+
+      //Make sure that the basename ends with .base.eth
+      if (!customBaseName.endsWith(".base.eth")) {
+        alert("Base name must end with .base.eth");
+        setIsRegisteringENS(false);
+        return;
+      }
+
+      const requiredBalance = calculateRequiredBalance(
+        customBaseName.split(".")[0]
+      );
+
+      if (
+        walletBalance &&
+        parseFloat(walletBalance.value.toString()) < parseFloat(requiredBalance)
+      ) {
+        alert(
+          `Insufficient balance. Required: ${requiredBalance} ETH. Available: ${walletBalance?.value.toString()} ETH`
+        );
+        setIsRegisteringENS(false);
+        return;
+      }
+
+      //switch wallet to base
+      switchChain(base);
+
+      const bundleId = await registerBasename(
+        wallet!,
+        customBaseName ?? defaultBaseName,
+        studentData?.[2],
+        parseFloat(requiredBalance)
+      );
+
+      const status = await waitForRegisterBasenameReceipt(
+        bundleId.bundleId,
+        wallet!
+      );
+
+      if (status?.status.status === "CONFIRMED") {
+        setRegisteredENS(true);
+        alert("ENS name registered successfully!");
+        switchChain(baseSepolia);
+      }
     } catch (error: any) {
-      alert("Error registering ENS: " + error?.response?.data?.error);
+      console.log(error);
+      alert("Error registering ENS: " + error.message);
     } finally {
       setIsRegisteringENS(false);
 
@@ -117,11 +228,12 @@ const StudentProfile: React.FC = () => {
 
   useEffect(() => {
     if (studentData && studentData?.[2]) {
-      fetchName(studentData?.[2]);
+      console.log("Fetching ENS name for student", account?.address);
+      fetchName(account?.address as Address);
     }
 
     if (registeredENS) {
-      fetchName(studentData?.[2]);
+      fetchName(account?.address as Address);
     }
   }, [studentData, ensName, ensDomain, registeredENS, data]);
 
@@ -195,30 +307,25 @@ const StudentProfile: React.FC = () => {
         .then((uri) => {
           setRegistrationStep(1);
           return registerStudent(
-            account,
+            wallet!,
             cardUID,
             studentId,
             uri?.split("/")[2] + "/" + uri?.split("/")[3]
           );
         })
-        .then((transactionHash) => {
+        .then((bundleId) => {
           setRegistrationStep(2);
-          return transactionHash;
-        })
-        .then((transactionHash) => {
-          if (!transactionHash) {
-            throw new Error("No transaction hash received");
-          }
-          const hash = transactionHash.transactionHash as `0x${string}`;
-          setTxHash(hash);
+          setTxBundleId(bundleId.bundleId);
           setRegistrationStep(3);
-          return waitForRegStudentReceipt(hash);
         })
-        .then((receipt) => {
-          if (receipt.receipt.status !== "success") {
-            throw new Error("Transaction failed");
+        .then(async () => {
+          let result;
+          if (txBundleId && wallet) {
+            result = await waitForRegStudentReceipt(txBundleId, wallet);
           }
-          setProfileRegistered(true);
+          if (result?.status.status === "CONFIRMED") {
+            setProfileRegistered(true);
+          }
           setRegistrationStep(4);
           return new Promise<void>((resolve) => {
             setCountdown(90);
@@ -257,7 +364,7 @@ const StudentProfile: React.FC = () => {
 
   const loadingStates = [
     { text: "Picture uploaded to IPFS" },
-    { text: "Student Registration Requested to Luca3Auth Smart Contract" },
+    { text: "Student Registration Requested to BasedAuth Smart Contract" },
     { text: "Transaction Processing" },
     { text: "Transaction Done" },
     {
@@ -298,7 +405,7 @@ const StudentProfile: React.FC = () => {
                   className="text-blue-400"
                   onClick={() =>
                     window.open(
-                      `https://sepolia.basescan.org/name-lookup-search?id=${ensName}.${ensDomain}`,
+                      `https://basescan.org/address/${resolvedAddress}#nfttransfers`,
                       "_blank"
                     )
                   }
@@ -384,8 +491,8 @@ const StudentProfile: React.FC = () => {
             value={
               studentData?.[0]
                 ? studentData[0].toString().length === 5
-                  ? `TP0${studentData[0]}`
-                  : `TP${studentData[0]}`
+                  ? `0${studentData[0]}`
+                  : `${studentData[0]}`
                 : ""
             }
           />
