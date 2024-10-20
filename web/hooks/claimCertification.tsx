@@ -6,8 +6,9 @@ import {
   waitForReceipt,
   simulateTransaction,
   resolveMethod,
+  encode,
 } from "thirdweb";
-import { useReadContract } from "thirdweb/react";
+import { useSendCalls, useCallsStatus } from "thirdweb/react";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
@@ -16,14 +17,13 @@ import { Abi } from "thirdweb/utils";
 const getTBAContract = (tbaAddress: string) => {
   return getContract({
     address: tbaAddress as `0x${string}`,
-    abi: (config.Luca3Auth.abi as Abi) || (config.ERC6551Account.abi as Abi),
+    abi: (config.BasedAuth.abi as Abi) || (config.ERC6551Account.abi as Abi),
     chain: baseSepolia,
     client,
   });
 };
 
 export async function claimCertification(
-  account: any,
   tbaAddress: string,
   certificationId: bigint
 ) {
@@ -35,24 +35,42 @@ export async function claimCertification(
     params: [certificationId],
   });
 
-  const { transactionHash } = await sendTransaction({
-    account,
-    transaction,
+  const encodedTx = await encode(transaction);
+
+  const { mutate: sendCalls, data: bundleId } = useSendCalls({
+    client,
+    waitForResult: true,
+  });
+
+  await sendCalls({
+    capabilities: {
+      paymasterService: {
+        url: `https://84532.bundler.thirdweb.com/${client.clientId}`,
+      },
+    },
+    calls: [
+      {
+        to: contract.address,
+        data: encodedTx,
+        chain: baseSepolia,
+        client,
+      },
+    ],
   });
 
   return {
-    transactionHash,
+    bundleId,
   };
 }
 
-export async function waitForClaimReceipt(transactionHash: `0x${string}`) {
-  const receipt = await waitForReceipt({
+export async function waitForClaimReceipt(bundleId: string) {
+  const { data: status, isLoading } = useCallsStatus({
     client,
-    chain: baseSepolia,
-    transactionHash,
+    bundleId,
   });
 
   return {
-    receipt,
+    status,
+    isLoading,
   };
 }

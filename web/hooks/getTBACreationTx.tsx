@@ -16,7 +16,7 @@ export async function getTBACreationTx(tbaAddress: string) {
 
   const contract = getContract({
     client,
-    address: config.Luca3Auth.contractAddress,
+    address: config.BasedAuth.contractAddress,
     chain: baseSepolia,
   });
 

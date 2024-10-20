@@ -8,8 +8,8 @@ import { client } from "../app/client";
 const rpcRequest = getRpcClient({ client, chain: baseSepolia });
 
 // Initialize the contract ABI and address
-const contractAbi = config.Luca3Auth.abi as Abi;
-const contractAddress = config.Luca3Auth.contractAddress;
+const contractAbi = config.BasedAuth.abi as Abi;
+const contractAddress = config.BasedAuth.contractAddress;
 
 // Function to fetch certifications metadata using `eth_call` and decode the result
 export async function getCertificationsMetadata(certificationIds: bigint[]) {

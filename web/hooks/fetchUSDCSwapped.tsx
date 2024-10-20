@@ -17,10 +17,10 @@ export async function fetchUSDCSwapped(tbaAddress: string) {
 
   const contract = getContract({
     client,
-    address: config.Luca3Treasury.contractAddress,
+    address: config.BasedTreasury.contractAddress,
     chain: baseSepolia,
     abi:
-      (config.ERC6551Account.abi as Abi) || (config.Luca3Treasury.abi as Abi),
+      (config.ERC6551Account.abi as Abi) || (config.BasedTreasury.abi as Abi),
   });
 
   const events = await getContractEvents({

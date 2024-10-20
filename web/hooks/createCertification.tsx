@@ -12,10 +12,10 @@ import config from "./config.json";
 import { Abi } from "thirdweb/utils";
 
 const contract = getContract({
-  address: config.Luca3Auth.contractAddress,
+  address: config.BasedAuth.contractAddress,
   chain: baseSepolia,
   client,
-  abi: config.Luca3Auth.abi as Abi,
+  abi: config.BasedAuth.abi as Abi,
 });
 
 export async function createCertification(

@@ -7,12 +7,12 @@ import { Abi } from "thirdweb/utils";
 
 const contract = getContract({
   client,
-  address: config.Luca3Auth.contractAddress,
+  address: config.BasedAuth.contractAddress,
   chain: baseSepolia,
-  abi: config.Luca3Auth.abi as Abi,
+  abi: config.BasedAuth.abi as Abi,
 });
 
-export function getLuca3AuthAdmin() {
+export function getBasedAuthAdmin() {
   const { data: admin, isLoading } = useReadContract({
     contract,
     // @ts-ignore

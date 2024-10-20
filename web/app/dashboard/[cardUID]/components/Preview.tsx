@@ -10,7 +10,7 @@ import StudentProfile from "@/app/components/StudentProfile";
 import StudentCertification from "@/app/components/StudentCertification";
 import StudentTreasury from "@/app/components/StudentTreasury";
 import Admin from "@/app/components/Admin";
-import { getLuca3AuthAdmin } from "@/hooks/getLuca3AuthAdmin";
+import { getBasedAuthAdmin } from "@/hooks/getBasedAuthAdmin";
 import { useActiveAccount } from "thirdweb/react";
 
 interface IActiveLink {
@@ -21,7 +21,7 @@ export function Preview({ cardUID }: { cardUID: string }) {
   const [open, setOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("Profile");
   const account = useActiveAccount();
-  const { admin } = getLuca3AuthAdmin();
+  const { admin } = getBasedAuthAdmin();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAdmin, setLoadingAdmin] = useState(true);
 
@@ -109,13 +109,13 @@ const Logo = () => {
       href="/"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <Image src="/Luca3.png" alt="Luca3Auth" width={40} height={40} />
+      <Image src="/Luca3.png" alt="BasedAuth" width={40} height={40} />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="font-medium text-white "
       >
-        Luca3Auth
+        BasedAuth
       </motion.span>
     </Link>
   );
@@ -127,7 +127,7 @@ const LogoIcon = () => {
       href="/"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <Image src="/Luca3.png" alt="Luca3Auth" width={40} height={40} />
+      <Image src="/Luca3.png" alt="BasedAuth" width={40} height={40} />
     </Link>
   );
 };

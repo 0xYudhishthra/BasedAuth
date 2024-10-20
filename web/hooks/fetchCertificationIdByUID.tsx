@@ -23,7 +23,7 @@ export async function getCertifications(cardUID: string) {
 
   const contract = getContract({
     client,
-    address: config.Luca3Auth.contractAddress,
+    address: config.BasedAuth.contractAddress,
     chain: baseSepolia,
   });
 
@@ -34,15 +34,15 @@ export async function getCertifications(cardUID: string) {
     events: [certificationClaimed],
   });
 
-const certificationClaimedEvents = events
-  .filter((event) => event.args.cardUID === cardUID)
-  .filter(
-    (event, index, self) =>
-      index ===
-      self.findIndex(
-        (t) => t.args.certificationId === event.args.certificationId
-      )
-  );
+  const certificationClaimedEvents = events
+    .filter((event) => event.args.cardUID === cardUID)
+    .filter(
+      (event, index, self) =>
+        index ===
+        self.findIndex(
+          (t) => t.args.certificationId === event.args.certificationId
+        )
+    );
 
   certificationClaimedEvents.forEach((event) => {
     certificationsIds.push(event.args.certificationId);

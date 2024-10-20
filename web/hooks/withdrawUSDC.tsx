@@ -12,10 +12,10 @@ import config from "./config.json";
 import { Abi } from "thirdweb/utils";
 
 const contract = getContract({
-  address: config.Luca3Treasury.contractAddress,
+  address: config.BasedTreasury.contractAddress,
   chain: baseSepolia,
   client,
-  abi: (config.Luca3Treasury.abi as Abi) || (config.Luca3Auth.abi as Abi),
+  abi: (config.BasedTreasury.abi as Abi) || (config.BasedAuth.abi as Abi),
 });
 export async function withdrawUSDC(account: any, amount: bigint) {
   const transaction = prepareContractCall({

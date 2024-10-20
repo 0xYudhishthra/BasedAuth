@@ -5,21 +5,24 @@ import {
   sendTransaction,
   waitForReceipt,
   simulateTransaction,
+  encode,
 } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
 import { Abi } from "thirdweb/utils";
+import { sendCalls, getCallsStatus } from "thirdweb/wallets/eip5792";
+import { Wallet } from "thirdweb/wallets";
 
 const contract = getContract({
-  address: config.Luca3Auth.contractAddress,
+  address: config.BasedAuth.contractAddress,
   chain: baseSepolia,
   client,
-  abi: config.Luca3Auth.abi as Abi,
+  abi: config.BasedAuth.abi as Abi,
 });
 
 export async function registerStudent(
-  account: any,
+  wallet: Wallet,
   cardUID: string,
   studentId: bigint,
   metadata: string
@@ -31,24 +34,45 @@ export async function registerStudent(
     params: [cardUID, studentId, metadata],
   });
 
-  const { transactionHash } = await sendTransaction({
-    account,
-    transaction,
+  const encodedTx = await encode(transaction);
+
+  const bundleId = await sendCalls({
+    wallet,
+    capabilities: {
+      paymasterService: {
+        url: `https://api.developer.coinbase.com/rpc/v1/base-sepolia/UOVBVXh40714GuiJU058MF2eM2N2RpV_`,
+      },
+    },
+    calls: [
+      {
+        to: contract.address,
+        data: encodedTx,
+        chain: baseSepolia,
+        client,
+      },
+    ],
   });
 
   return {
-    transactionHash,
+    bundleId,
   };
 }
 
-export async function waitForRegStudentReceipt(transactionHash: `0x${string}`) {
-  const receipt = await waitForReceipt({
+export async function waitForRegStudentReceipt(
+  bundleId: string,
+  wallet: Wallet
+) {
+  const status = await getCallsStatus({
+    wallet,
     client,
-    chain: baseSepolia,
-    transactionHash,
+    bundleId,
   });
 
-  return {
-    receipt,
-  };
+  if (status.status === "CONFIRMED") {
+    return {
+      status,
+    };
+  }
+
+  return null;
 }

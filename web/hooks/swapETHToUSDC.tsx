@@ -16,7 +16,7 @@ import { Abi } from "thirdweb/utils";
 const getTBAContract = (tbaAddress: string) => {
   return getContract({
     address: tbaAddress as `0x${string}`,
-    abi: (config.ERC6551Account.abi as Abi) || (config.Luca3Treasury.abi as Abi),
+    abi: (config.ERC6551Account.abi as Abi) || (config.BasedTreasury.abi as Abi),
     chain: baseSepolia,
     client,
   });

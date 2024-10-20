@@ -11,7 +11,7 @@ export function useUSDCBalance() {
   // Always call the hook, but handle empty account cases inside the hook return
   const { data, isLoading, isError } = useWalletBalance({
     chain: baseSepolia,
-    address: config.Luca3Treasury.contractAddress,
+    address: config.BasedTreasury.contractAddress,
     client,
     tokenAddress,
   });

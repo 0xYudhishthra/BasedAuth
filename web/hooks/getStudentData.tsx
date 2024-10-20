@@ -7,9 +7,9 @@ import { Abi } from "thirdweb/utils";
 
 const contract = getContract({
   client,
-  address: config.Luca3Auth.contractAddress,
+  address: config.BasedAuth.contractAddress,
   chain: baseSepolia,
-  abi: config.Luca3Auth.abi as Abi,
+  abi: config.BasedAuth.abi as Abi,
 });
 
 export function getStudentData(cardUID: string) {

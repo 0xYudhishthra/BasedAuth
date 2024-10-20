@@ -19,7 +19,7 @@ const getTBAContract = (tbaAddress: string) => {
     chain: baseSepolia,
     client,
     abi:
-      (config.ERC6551Account.abi as Abi) || (config.Luca3Treasury.abi as Abi),
+      (config.ERC6551Account.abi as Abi) || (config.BasedTreasury.abi as Abi),
   });
 };
 
