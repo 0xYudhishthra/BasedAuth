@@ -24,9 +24,8 @@ const StudentCertification: React.FC = () => {
   const [certificationIds, setCertificationIds] = useState<bigint[]>([]);
   const [certificationId, setCertificationId] = useState<string | null>(null);
   const [claimStatus, setClaimStatus] = useState<string | null>(null);
-  const [claimTransactionHash, setClaimTransactionHash] = useState<
-    string | null
-  >(null);
+  const [claimBundleId, setClaimBundleId] = useState<string | null>(null);
+  const [claimTxHash, setClaimTxHash] = useState<string | null>(null);
   const [certificationItems, setCertificationItems] = useState<any[]>([]); // State to store the certification items
 
   const { studentData: data, isLoading: isContractLoading } =
@@ -64,7 +63,7 @@ const StudentCertification: React.FC = () => {
 
       fetchCertifications();
     }
-  }, [cardUID, claimStatus, claimTransactionHash]);
+  }, [cardUID, claimStatus, claimBundleId]);
 
   useEffect(() => {
     if (
@@ -92,22 +91,20 @@ const StudentCertification: React.FC = () => {
 
       console.log("studentData", studentData?.[2]);
 
-      const { transactionHash } = await claimCertification(
-        account,
+      const { bundleId } = await claimCertification(
         studentData?.[2] as string,
         BigInt(certificationId)
       );
 
-      setClaimTransactionHash(transactionHash);
+      setClaimBundleId(bundleId as string);
 
-      const { receipt } = await waitForClaimReceipt(
-        transactionHash as `0x${string}`
-      );
+      const { status } = await waitForClaimReceipt(bundleId as string);
 
-      if (receipt && receipt?.status === "success") {
+      if (status?.status === "CONFIRMED") {
         setClaimStatus(
           `Successfully claimed certification ${certificationId}.`
         );
+        setClaimTxHash(status?.receipts[0].transactionHash as string);
 
         //enable the claim button
         document.getElementById("claim-button")?.removeAttribute("disabled");
@@ -188,11 +185,11 @@ const StudentCertification: React.FC = () => {
                   {claimStatus}
                 </p>
                 {claimStatus.startsWith("Successfully claimed") &&
-                  claimTransactionHash && (
+                  claimTxHash && (
                     <button
                       onClick={() =>
                         window.open(
-                          `https://sepolia.basescan.org/tx/${claimTransactionHash}`,
+                          `https://sepolia.basescan.org/tx/${claimTxHash}`,
                           "_blank"
                         )
                       }
