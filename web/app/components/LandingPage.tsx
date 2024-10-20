@@ -206,7 +206,7 @@ export function LandingPage() {
   return (
     <BackgroundLines className="flex items-center justify-center w-full flex-col px-4 min-h-screen relative z-10">
       <h2 className="bg-clip-text text-transparent text-center bg-gradient-to-b from-neutral-600 to-white text-5xl sm:text-6xl md:text-6xl lg:text-8xl font-sans py-4 sm:py-6 md:py-8 relative z-20 font-bold tracking-tight">
-        Luca3Auth
+        BasedAuth
       </h2>
       <p className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-neutral-700 dark:text-neutral-400 text-center px-4">
         Linking NFT wallets to APCard with biometrics and social login.
@@ -244,7 +244,7 @@ export function LandingPage() {
                 Access Your NFT Wallet
               </h4>
               <p className="text-xs sm:text-sm text-center text-gray-300 mb-4">
-                <span className="font-semibold text-indigo-400">Luca3Auth</span>{" "}
+                <span className="font-semibold text-indigo-400">BasedAuth</span>{" "}
                 adapts to your device:
                 <span className="italic ml-1">Options tailored for {os}</span>
               </p>
