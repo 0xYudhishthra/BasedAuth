@@ -85,15 +85,9 @@ export async function registerBasename(
 
   const encodedTx = await encode(transaction);
 
-  //simulate the transaction
   const simulatedTx = await simulateTransaction({
     transaction: transaction,
   });
-
-  console.log(simulatedTx);
-
-  //Switch to base
-  
 
   const bundleId = await sendCalls({
     wallet,
