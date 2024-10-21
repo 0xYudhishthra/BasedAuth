@@ -1,15 +1,19 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { IconUser, IconWallet, IconCertificate } from "@tabler/icons-react";
+import {
+  IconUser,
+  IconWallet,
+  IconCertificate,
+  IconPointerSearch,
+} from "@tabler/icons-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import StudentProfile from "@/app/components/StudentProfile";
-import StudentCertification from "@/app/components/StudentCertification";
+import StudentInteraction from "@/app/components/StudentInteraction";
 import StudentTreasury from "@/app/components/StudentTreasury";
-import Admin from "@/app/components/Admin";
 import { getBasedAuthAdmin } from "@/hooks/getBasedAuthAdmin";
 import { useActiveAccount } from "thirdweb/react";
 
@@ -37,10 +41,10 @@ export function Preview({ cardUID }: { cardUID: string }) {
       icon: <IconWallet className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
-      label: "Certificate",
+      label: "Interaction",
       href: "#",
       icon: (
-        <IconCertificate className="text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconPointerSearch className="text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];
@@ -137,17 +141,13 @@ const Dashboard = ({
   isAdmin,
 }: IActiveLink & { isAdmin: boolean }) => {
   const renderContent = () => {
-    if (isAdmin) {
-      return <Admin />;
-    }
-
     switch (activeLink) {
       case "Profile":
         return <StudentProfile />;
       case "Treasury":
         return <StudentTreasury />;
-      case "Certificate":
-        return <StudentCertification />;
+      case "Interaction":
+        return <StudentInteraction />;
 
       default:
         return <StudentProfile />;
