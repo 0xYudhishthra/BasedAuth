@@ -1,17 +1,15 @@
 import {
   getContract,
   prepareContractCall,
-  prepareTransaction,
-  sendTransaction,
-  waitForReceipt,
+  encode,
   simulateTransaction,
-  resolveMethod,
 } from "thirdweb";
-import { useReadContract } from "thirdweb/react";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
 import { Abi } from "thirdweb/utils";
+import { sendCalls, waitForBundle } from "thirdweb/wallets/eip5792";
+import { Wallet } from "thirdweb/wallets";
 
 const getTBAContract = (tbaAddress: string) => {
   return getContract({
@@ -24,7 +22,7 @@ const getTBAContract = (tbaAddress: string) => {
 };
 
 export async function sendUSDC(
-  account: any,
+  wallet: Wallet,
   tbaAddress: string,
   recipient: string,
   amount: bigint
@@ -38,24 +36,47 @@ export async function sendUSDC(
     params: [config.USDC.contractAddress, recipient, amount],
   });
 
-  const { transactionHash } = await sendTransaction({
-    account,
-    transaction,
+  const encodedTx = await encode(transaction);
+
+  const simulatedTx = await simulateTransaction({
+    transaction: transaction,
+    account: await wallet.getAccount(),
+  });
+
+  console.log(simulatedTx);
+
+  const bundleId = await sendCalls({
+    wallet,
+    capabilities: {
+      paymasterService: {
+        url: `https://api.developer.coinbase.com/rpc/v1/base-sepolia/UOVBVXh40714GuiJU058MF2eM2N2RpV_`,
+      },
+    },
+    calls: [
+      {
+        to: contract.address,
+        data: encodedTx,
+        chain: baseSepolia,
+        client,
+      },
+    ],
   });
 
   return {
-    transactionHash,
+    bundleId,
   };
 }
 
-export async function waitForSendUSDCReceipt(transactionHash: `0x${string}`) {
-  const receipt = await waitForReceipt({
+export async function waitForSendUSDCReceipt(bundleId: string, wallet: Wallet) {
+  const result = await waitForBundle({
     client,
     chain: baseSepolia,
-    transactionHash,
+    wallet,
+    bundleId,
   });
 
   return {
-    receipt,
+    status: result.status,
+    receipts: result.receipts,
   };
 }
