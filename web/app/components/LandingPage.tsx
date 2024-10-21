@@ -133,7 +133,7 @@ export function LandingPage() {
 
   const handleTap = () => {
     if (hasNFCSupport) {
-      alert("Tap your APCard");
+      alert("Tap your student card");
       readNFC();
     } else {
       console.warn("NFC not supported on this device.");
@@ -155,17 +155,17 @@ export function LandingPage() {
   const verificationMethods = [
     {
       icon: <IconScan size={48} color="white" />,
-      title: "Scan APCard",
+      title: "Scan Student Card",
       description:
-        "Use your device's camera to scan your APCard barcode for verification.",
+        "Use your device's camera to scan your student card barcode for verification.",
       action: handleScan,
       showOn: ["iOS"],
     },
     {
       icon: <IconCards size={48} color="white" />,
-      title: "Tap APCard",
+      title: "Tap Student Card",
       description:
-        "Tap your NFC-enabled APCard to your device for quick verification.",
+        "Tap your NFC-enabled student card to your device for quick verification.",
       action: handleTap,
       showOn: hasNFCSupport ? ["Android"] : [], // Only show if NFC is supported
     },
@@ -173,7 +173,7 @@ export function LandingPage() {
       icon: <IconTypeface size={48} color="white" />,
       title: "Type CardUID",
       description:
-        "Type the CardUID from your APCard for verification, this can be student ID too.",
+        "Type the CardUID from your student card for verification, this can be student ID too.",
       action: handleType,
       showOn: ["Windows", "macOS", "Linux", "Android", "iOS"],
     },
@@ -209,7 +209,7 @@ export function LandingPage() {
         BasedAuth
       </h2>
       <p className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-neutral-700 dark:text-neutral-400 text-center px-4">
-        Linking NFT wallets to APCard with biometrics and social login.
+        Linking NFT wallets to student cards with biometrics and social login.
       </p>
       {isScanning && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex justify-center items-center">
@@ -251,7 +251,7 @@ export function LandingPage() {
               <p className="text-xs sm:text-sm text-center text-gray-300 mb-5">
                 Your{" "}
                 <span className="underline decoration-dotted">
-                  APCard&apos;s cardUID
+                  student card&apos;s cardUID
                 </span>{" "}
                 is the key to your
                 <span className="font-bold text-emerald-400 ml-1">
