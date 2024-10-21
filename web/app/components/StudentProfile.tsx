@@ -40,6 +40,7 @@ import {
   resolveAddress,
   BASENAME_RESOLVER_ADDRESS,
 } from "thirdweb/extensions/ens";
+import { parseEther, formatEther } from "ethers/lib/utils";
 
 const StudentProfile: React.FC = () => {
   const router = useRouter();
@@ -50,7 +51,7 @@ const StudentProfile: React.FC = () => {
   const { data: walletBalance } = useWalletBalance({
     client,
     address: account?.address,
-    chain: baseSepolia,
+    chain: base,
   });
 
   const [studentData, setStudentData] = useState<any | null>(null);
@@ -163,12 +164,17 @@ const StudentProfile: React.FC = () => {
         customBaseName.split(".")[0]
       );
 
+      const requiredBalanceWei = parseEther(requiredBalance);
+      const walletBalanceWei = BigInt(walletBalance?.value.toString() ?? "0");
+
       if (
-        walletBalance &&
-        parseFloat(walletBalance.value.toString()) < parseFloat(requiredBalance)
+        BigInt(walletBalanceWei.toString()) <
+        BigInt(requiredBalanceWei.toString())
       ) {
         alert(
-          `Insufficient balance. Required: ${requiredBalance} ETH. Available: ${walletBalance?.value.toString()} ETH`
+          `Insufficient balance. Required: ${formatEther(
+            requiredBalanceWei
+          )} ETH. Available: ${formatEther(walletBalanceWei)} ETH`
         );
         setIsRegisteringBasename(false);
         return;
