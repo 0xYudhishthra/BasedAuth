@@ -36,6 +36,11 @@ export async function registerStudent(
 
   const encodedTx = await encode(transaction);
 
+  const simulatedTx = await simulateTransaction({
+    transaction: transaction,
+    account: await wallet.getAccount(),
+  });
+
   const bundleId = await sendCalls({
     wallet,
     capabilities: {

@@ -1,4 +1,4 @@
-import { getContract, prepareContractCall, encode } from "thirdweb";
+import { getContract, prepareContractCall, encode, simulateTransaction } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "../app/client";
 import config from "./config.json";
@@ -34,6 +34,11 @@ export async function swapETHToUSDC(
   });
 
   const encodedTx = await encode(transaction);
+
+  const simulatedTx = await simulateTransaction({
+    transaction: transaction,
+    account: await wallet.getAccount(),
+  });
 
   const bundleId = await sendCalls({
     wallet,
