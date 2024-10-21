@@ -195,8 +195,10 @@ const StudentProfile: React.FC = () => {
     } catch (error: any) {
       console.log(error);
       alert("Error registering ENS: " + error.message);
+      switchChain(baseSepolia);
     } finally {
       setIsRegisteringENS(false);
+      switchChain(baseSepolia);
 
       //enable the claim button
       document.getElementById("ens-button")?.removeAttribute("disabled");
@@ -300,6 +302,7 @@ const StudentProfile: React.FC = () => {
 
     setIsRegistering(true);
     setRegistrationStep(0);
+    switchChain(baseSepolia);
 
     try {
       // Step 1: Upload image file to IPFS
