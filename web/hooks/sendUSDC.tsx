@@ -43,8 +43,6 @@ export async function sendUSDC(
     account: await wallet.getAccount(),
   });
 
-  console.log(simulatedTx);
-
   const bundleId = await sendCalls({
     wallet,
     capabilities: {

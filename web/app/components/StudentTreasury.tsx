@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, useActiveWallet } from "thirdweb/react";
 import axios from "axios";
 import { HoverEffect } from "./ui/card-hover-effect";
 import { getTBABalance } from "@/hooks/getTBABalance";
@@ -11,11 +11,19 @@ import { useUSDCBalance } from "@/hooks/getUSDCBalance";
 import { sendUSDC, waitForSendUSDCReceipt } from "@/hooks/sendUSDC";
 import { AxiosError } from "axios";
 import { fetchUSDCSwapped } from "@/hooks/fetchUSDCSwapped";
+import {
+  resolveAddress,
+  BASENAME_RESOLVER_ADDRESS,
+} from "thirdweb/extensions/ens";
+import { base } from "thirdweb/chains";
+import { client } from "../client";
+import { Wallet } from "thirdweb/wallets";
 
 const StudentTreasury = () => {
   const account = useActiveAccount();
+  const wallet = useActiveWallet();
   const [ethToUsdRate, setEthToUsdRate] = useState(0);
-  const [recipientENS, setRecipientENS] = useState("");
+  const [recipientBasename, setRecipientBasename] = useState("");
   const [amountToSend, setAmountToSend] = useState("");
   const [amountToSwap, setAmountToSwap] = useState(""); // For ETH to USDC swap amount
   const [usdcEquivalent, setUsdcEquivalent] = useState(0); // For showing USDC equivalent
@@ -32,10 +40,12 @@ const StudentTreasury = () => {
   const [swapTransactionHash, setSwapTransactionHash] = useState<string | null>(
     null
   );
+  const [swapBundleId, setSwapBundleId] = useState<string | null>(null);
   const [swapReceipt, setSwapReceipt] = useState<any | null>(null);
   const [sendUSDCTransactionHash, setSendUSDCTransactionHash] = useState<
     string | null
   >(null);
+  const [sendBundleId, setSendBundleId] = useState<string | null>(null);
   const [sendUSDCReceipt, setSendUSDCReceipt] = useState<any | null>(null);
   const { studentData: data, isLoading: isContractLoading } =
     getStudentData(cardUID);
@@ -47,16 +57,21 @@ const StudentTreasury = () => {
     null
   );
 
-  const fetchENSAddress = async (ens: string) => {
+  const fetchBasenameAddress = async (basename: string) => {
     try {
-      const ensName = ens.split(".")[0];
-      const ensDomain = ens.split(".")[1] + "." + ens.split(".")[2];
-      const response = await axios.get(
-        `/api/search-name?domain=${ensDomain}&name=${ensName}`
-      );
-      return response.data;
+      const address = await resolveAddress({
+        client,
+        name: basename,
+        resolverAddress: BASENAME_RESOLVER_ADDRESS,
+        resolverChain: base,
+      });
+      if (address == "0x0000000000000000000000000000000000000000") {
+        throw new Error("Invalid Basename");
+      }
+      return address;
     } catch (error) {
       console.error("Error fetching names:", error);
+      throw new Error("Invalid Basename");
     }
   };
 
@@ -64,39 +79,46 @@ const StudentTreasury = () => {
     const fetchReceipt = async () => {
       try {
         // Only fetch if the swapTransactionHash is available
-        if (swapTransactionHash) {
-          const { receipt } = await waitForSwapReceipt(
-            swapTransactionHash as `0x${string}`
+        if (swapBundleId) {
+          const { status, receipts } = await waitForSwapReceipt(
+            swapBundleId as `0x${string}`,
+            wallet!
           );
-          setSwapReceipt(receipt);
+          setSwapReceipt(status);
 
           // Check if the receipt has a status, and if it's success
-          if (receipt && receipt?.status === "success") {
+          if (status === "CONFIRMED") {
             setSwapStatus(
               `Swap Successful! You will receive ${
                 swappedUSDCAmount ? swappedUSDCAmount.toFixed(2) : ""
               } USDC.`
             );
+            setSwapTransactionHash(receipts[0].transactionHash);
+            document.getElementById("swap-button")?.removeAttribute("disabled");
           }
 
-          if (receipt && receipt?.status === "reverted") {
+          if (receipts[0].status === "reverted") {
             setSwapStatus("Swap failed.");
           }
         }
 
         // Only fetch if the sendUSDCTransactionHash is available
-        if (sendUSDCTransactionHash) {
-          const { receipt } = await waitForSendUSDCReceipt(
-            sendUSDCTransactionHash as `0x${string}`
+        if (sendBundleId) {
+          const { status, receipts } = await waitForSendUSDCReceipt(
+            sendBundleId as `0x${string}`,
+            wallet!
           );
-          setSendUSDCReceipt(receipt);
+          setSendUSDCReceipt(status);
 
           // Check if the receipt has a status, and if it's success
-          if (receipt && receipt?.status === "success") {
-            setSendStatus(`Sent ${amountToSend} USDC to ${recipientENS}.`);
+          if (status === "CONFIRMED") {
+            setSendStatus(`Sent ${amountToSend} USDC to ${recipientBasename}.`);
+            setSendUSDCTransactionHash(receipts[0].transactionHash);
+            //enable the send button
+            document.getElementById("send-button")?.removeAttribute("disabled");
           }
 
-          if (receipt && receipt?.status === "reverted") {
+          if (receipts[0].status === "reverted") {
             setSendStatus("Send failed.");
           }
         }
@@ -114,11 +136,11 @@ const StudentTreasury = () => {
 
     fetchReceipt();
   }, [
-    swapTransactionHash,
-    sendUSDCTransactionHash,
+    swapBundleId,
+    sendBundleId,
     swappedUSDCAmount,
     amountToSend,
-    recipientENS,
+    recipientBasename,
   ]);
 
   useEffect(() => {
@@ -205,25 +227,24 @@ const StudentTreasury = () => {
       return;
     }
 
+    //disable the swap button
+    document.getElementById("swap-button")?.setAttribute("disabled", "true");
+
     try {
       const amountToSwapBigInt = BigInt(parseFloat(amountToSwap) * 1e18); // Convert ETH to wei as bigint
 
       setSwapStatus("Swapping...");
 
-      //disable the swap button
-      document.getElementById("swap-button")?.setAttribute("disabled", "true");
-
       // Call the swapETHToUSDC hook
-      const { transactionHash } = await swapETHToUSDC(
-        account,
+      const bundleId = await swapETHToUSDC(
+        wallet!,
         studentData?.[2] as string,
         amountToSwapBigInt
       );
 
-      setSwapTransactionHash(transactionHash);
+      console.log("bundleId", bundleId);
 
-      //enable the swap button
-      document.getElementById("swap-button")?.removeAttribute("disabled");
+      setSwapBundleId(bundleId.bundleId);
     } catch (error) {
       console.error(error);
 
@@ -234,6 +255,9 @@ const StudentTreasury = () => {
 
       // Set the error message in the swapStatus state
       setSwapStatus(`Swap failed: ${formattedError}`);
+
+      //enable the swap button
+      document.getElementById("swap-button")?.removeAttribute("disabled");
     }
   };
 
@@ -243,29 +267,29 @@ const StudentTreasury = () => {
       return;
     }
 
-    if (!recipientENS) {
-      alert("Please enter a valid ENS or address to send USDC.");
+    if (!recipientBasename) {
+      alert("Please enter a valid Basename or address to send USDC.");
       return;
     }
 
     try {
-      // Set the "Resolving ENS..." message
-      setSendStatus("Resolving ENS...");
+      // Set the "Resolving Basename..." message
+      setSendStatus("Resolving Basename...");
 
       //disable the send button
       document.getElementById("send-button")?.setAttribute("disabled", "true");
 
-      // Resolve ENS to address or use the provided address directly
-      const address = recipientENS.endsWith(".eth")
-        ? await fetchENSAddress(recipientENS)
-        : recipientENS;
+      // Resolve Basename to address or use the provided address directly
+      const address = recipientBasename.endsWith(".base.eth")
+        ? await fetchBasenameAddress(recipientBasename)
+        : recipientBasename;
 
       if (!address) {
-        throw new Error("Invalid ENS or address.");
+        throw new Error("Invalid Basename or address.");
       }
 
-      const recipientAddress = recipientENS.endsWith(".eth")
-        ? address[0].address
+      const recipientAddress = recipientBasename.endsWith(".base.eth")
+        ? await fetchBasenameAddress(recipientBasename)
         : address;
 
       const amountToSendBigInt = BigInt(parseFloat(amountToSend) * 1e6); // Convert USDC to 6 decimals
@@ -274,24 +298,22 @@ const StudentTreasury = () => {
       setSendStatus("Sending...");
 
       // Call the sendUSDC hook and get the transaction hash
-      const { transactionHash } = await sendUSDC(
-        account,
+      const bundleId = await sendUSDC(
+        wallet!,
         studentData?.[2] as string,
-        recipientAddress,
+        recipientAddress as string,
         amountToSendBigInt
       );
 
+      console.log("bundleId", bundleId);
+
       // Set the transaction hash and status
-      setSendUSDCTransactionHash(transactionHash);
+      setSendBundleId(bundleId.bundleId);
+    } catch (error: any) {
+      setSendStatus(`Send failed with ${error.message}`);
 
       //enable the send button
       document.getElementById("send-button")?.removeAttribute("disabled");
-    } catch (error) {
-      console.error(error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      const formattedError = errorMessage.split(" - ")[0];
-      setSendStatus(`Send failed with ${formattedError}`);
     }
   };
 
@@ -392,9 +414,9 @@ const StudentTreasury = () => {
         <>
           <input
             type="text"
-            placeholder="Recipient ENS or address"
-            value={recipientENS}
-            onChange={(e) => setRecipientENS(e.target.value)}
+            placeholder="Recipient Basename or address"
+            value={recipientBasename}
+            onChange={(e) => setRecipientBasename(e.target.value)}
             className="w-full p-2 mb-2 rounded bg-neutral-800"
           />
           <input

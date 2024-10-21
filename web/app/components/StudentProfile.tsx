@@ -56,8 +56,8 @@ const StudentProfile: React.FC = () => {
   const [studentData, setStudentData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [studentId, setStudentId] = useState<bigint | null>(null);
-  const [ensName, setEnsName] = useState<string | null>(null);
-  const [ensDomain, setEnsDomain] = useState<string | null>(null);
+  const [basename, setBasename] = useState<string | null>(null);
+  const [basenameDomain, setBasenameDomain] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [balance, setBalance] = useState<string | number | null>(null);
   const [txBundleId, setTxBundleId] = useState<string | null>(null);
@@ -66,8 +66,8 @@ const StudentProfile: React.FC = () => {
   const [registrationStep, setRegistrationStep] = useState(0);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(90);
-  const [isRegisteringENS, setIsRegisteringENS] = useState(false);
-  const [registeredENS, setRegisteredENS] = useState(false);
+  const [isRegisteringBasename, setIsRegisteringBasename] = useState(false);
+  const [registeredBasename, setRegisteredBasename] = useState(false);
   const [profileRegistered, setProfileRegistered] = useState(false);
   const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
   const switchChain = useSwitchActiveWalletChain();
@@ -101,28 +101,30 @@ const StudentProfile: React.FC = () => {
       resolverAddress: BASENAME_RESOLVER_ADDRESS,
       resolverChain: base,
     });
-    setEnsName(name?.split(".")[0] ?? "");
-    setEnsDomain(name?.split(".")[1] + "." + name?.split(".")[2]);
+    setBasename(name?.split(".")[0] ?? "");
+    setBasenameDomain(name?.split(".")[1] + "." + name?.split(".")[2]);
     console.log("name", name);
 
     const resolvedAddress = await resolveAddress({
       client,
-      name: ensName + "." + ensDomain,
+      name: basename + "." + basenameDomain,
       resolverAddress: BASENAME_RESOLVER_ADDRESS,
       resolverChain: base,
     });
     setResolvedAddress(resolvedAddress);
   }
 
-  const handleENSRegister = async () => {
+  const handleBasenameRegister = async () => {
     if (!studentData?.[2] || !studentData?.[0]) {
-      alert("Cannot register ENS. No TBA Address or ENS name found.");
+      alert("Cannot register basename. No TBA Address or basename found.");
       return;
     }
 
-    setIsRegisteringENS(true);
+    setIsRegisteringBasename(true);
     //disable the claim button
-    document.getElementById("ens-button")?.setAttribute("disabled", "true");
+    document
+      .getElementById("basename-button")
+      ?.setAttribute("disabled", "true");
 
     try {
       const studentIdString =
@@ -140,20 +142,20 @@ const StudentProfile: React.FC = () => {
 
       if (customBaseName === null) {
         // User canceled the prompt
-        setIsRegisteringENS(false);
+        setIsRegisteringBasename(false);
         return;
       }
 
       if (customBaseName.trim() === "") {
         // User entered an empty string
-        setIsRegisteringENS(false);
+        setIsRegisteringBasename(false);
         return;
       }
 
       //Make sure that the basename ends with .base.eth
       if (!customBaseName.endsWith(".base.eth")) {
         alert("Base name must end with .base.eth");
-        setIsRegisteringENS(false);
+        setIsRegisteringBasename(false);
         return;
       }
 
@@ -168,7 +170,7 @@ const StudentProfile: React.FC = () => {
         alert(
           `Insufficient balance. Required: ${requiredBalance} ETH. Available: ${walletBalance?.value.toString()} ETH`
         );
-        setIsRegisteringENS(false);
+        setIsRegisteringBasename(false);
         return;
       }
 
@@ -188,20 +190,20 @@ const StudentProfile: React.FC = () => {
       );
 
       if (status?.status.status === "CONFIRMED") {
-        setRegisteredENS(true);
-        alert("ENS name registered successfully!");
+        setRegisteredBasename(true);
+        alert("Basename registered successfully!");
         switchChain(baseSepolia);
       }
     } catch (error: any) {
       console.log(error);
-      alert("Error registering ENS: " + error.message);
+      alert("Error registering basename: " + error.message);
       switchChain(baseSepolia);
     } finally {
-      setIsRegisteringENS(false);
+      setIsRegisteringBasename(false);
       switchChain(baseSepolia);
 
       //enable the claim button
-      document.getElementById("ens-button")?.removeAttribute("disabled");
+      document.getElementById("basename-button")?.removeAttribute("disabled");
     }
   };
 
@@ -230,14 +232,14 @@ const StudentProfile: React.FC = () => {
 
   useEffect(() => {
     if (studentData && studentData?.[2]) {
-      console.log("Fetching ENS name for student", account?.address);
+      console.log("Fetching basename for user", account?.address);
       fetchName(account?.address as Address);
     }
 
-    if (registeredENS) {
+    if (registeredBasename) {
       fetchName(account?.address as Address);
     }
-  }, [studentData, ensName, ensDomain, registeredENS, data]);
+  }, [studentData, basename, basenameDomain, registeredBasename, data]);
 
   useEffect(() => {
     if (studentData?.[2]) {
@@ -403,7 +405,7 @@ const StudentProfile: React.FC = () => {
               translateZ="60"
               className="text-white text-lg md:text-xl font-semibold text-center block"
             >
-              {ensName ? (
+              {basename ? (
                 <button
                   className="text-blue-400"
                   onClick={() =>
@@ -412,14 +414,14 @@ const StudentProfile: React.FC = () => {
                       "_blank"
                     )
                   }
-                >{`${ensName}.${ensDomain}`}</button>
+                >{`${basename}.${basenameDomain}`}</button>
               ) : (
                 <button
-                  id="ens-button"
-                  onClick={handleENSRegister}
+                  id="basename-button"
+                  onClick={handleBasenameRegister}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 focus:outline-none"
                 >
-                  {isRegisteringENS ? (
+                  {isRegisteringBasename ? (
                     <svg
                       className="animate-spin h-5 w-5 text-white inline-block mr-2"
                       xmlns="http://www.w3.org/2000/svg"
@@ -441,7 +443,7 @@ const StudentProfile: React.FC = () => {
                       ></path>
                     </svg>
                   ) : (
-                    "Register ENS"
+                    "Register Basename"
                   )}
                 </button>
               )}
@@ -509,7 +511,7 @@ const StudentProfile: React.FC = () => {
     <div className="bg-gray-900 p-6 rounded-lg shadow-lg max-w-4xl mx-auto flex flex-col md:flex-row mt-4 space-y-6 md:space-y-0">
       <div className="flex-1 md:mr-6">
         <h2 className="text-2xl font-bold mb-4 text-white">
-          Explore more with your APCard!
+          Explore more with your student card!
         </h2>
         <p className="mb-4 text-gray-300">Card UID: {cardUID}</p>
         <div className="mb-4">
